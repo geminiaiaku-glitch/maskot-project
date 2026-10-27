@@ -15,6 +15,7 @@ internal sealed class MediaService : IDisposable
     private TimeSpan _position, _duration;
     private DateTimeOffset _sampleAt;
     private bool _playing;
+    private double _playbackRate = 1;
     private string? _pinnedSource;
     private bool _initializing;
     private bool _disposed;
@@ -26,8 +27,7 @@ internal sealed class MediaService : IDisposable
     {
         get
         {
-            var p = _position + (_playing ? DateTimeOffset.UtcNow - _sampleAt : TimeSpan.Zero);
-            return TimeSpan.FromSeconds(Math.Clamp(p.TotalSeconds, 0, Math.Max(0, _duration.TotalSeconds)));
+            return PlaybackPosition.Estimate(_position, _duration, DateTimeOffset.UtcNow - _sampleAt, _playing, _playbackRate);
         }
     }
 
@@ -117,11 +117,12 @@ internal sealed class MediaService : IDisposable
             }
             if (version != Volatile.Read(ref _revision)) return;
             _playing = info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+            _playbackRate = info.PlaybackRate is { } rate && double.IsFinite(rate) && rate > 0 ? rate : 1;
             _duration = timeline.EndTime > timeline.StartTime ? timeline.EndTime - timeline.StartTime : TimeSpan.Zero;
             _sampleAt = DateTimeOffset.UtcNow;
             _position = timeline.Position - timeline.StartTime;
             var age = _sampleAt - timeline.LastUpdatedTime;
-            if (_playing && age >= TimeSpan.Zero && age < TimeSpan.FromDays(1)) _position += age;
+            if (_playing && age >= TimeSpan.Zero && age < TimeSpan.FromDays(1)) _position += TimeSpan.FromSeconds(age.TotalSeconds * _playbackRate);
             var c = info.Controls;
             Current = new(session.SourceAppUserModelId, props.Title, props.Artist, cover, _position, _duration,
                 _playing, c.IsPlayPauseToggleEnabled, c.IsPreviousEnabled, c.IsNextEnabled, c.IsPlaybackPositionEnabled && _duration > TimeSpan.Zero);

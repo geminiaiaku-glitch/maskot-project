@@ -79,6 +79,7 @@ public partial class MascotWindow : Window
         Item("Jalan-jalan", Host.Walk);
         Item("Diam di sini", Host.Stay);
         Item("Pengaturan", () => Host.OpenPanel(true));
+        Item("Lirik & karaoke", Host.OpenLyricsPanel);
         menu.Items.Add(new Separator()); Item("Keluar", Host.Quit);
         menu.Closed += (_, _) => { if (!Host.PanelVisible) Host.Controller.SetPanel(false); };
         ContextMenu = menu; menu.IsOpen = true; e.Handled = true;
@@ -86,6 +87,7 @@ public partial class MascotWindow : Window
     internal void UpdateAppearance()
     {
         var c = Host.Controller;
+        var cue = Host.Cue;
         var notch = c.Mode == MascotMode.Notch;
         Notch.Visibility = notch ? Visibility.Visible : Visibility.Collapsed;
         Character.Visibility = notch ? Visibility.Collapsed : Visibility.Visible;
@@ -100,13 +102,16 @@ public partial class MascotWindow : Window
         }
         _lastNotch = notch;
         Character.SetPose(c.Pose, c.FacingRight, Host.State.Preferences.ExtraAnimations);
+        Character.SetPerformance(cue.Mood);
         var timer = Host.State.Timer;
         var remaining = TimeSpan.FromSeconds(timer.Remaining(DateTimeOffset.UtcNow));
         var text = $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
         SmallTimer.Text = text; NotchTimer.Text = timer.Running ? text : DateTime.Now.ToString("HH:mm");
-        NotchBars.IsActive = Host.Media.Current?.Playing == true && Host.State.Preferences.ExtraAnimations;
+        NotchBars.IsActive = Host.ActiveMedia?.Playing == true && Host.State.Preferences.ExtraAnimations;
         TimerPill.Visibility = timer.Running && !notch ? Visibility.Visible : Visibility.Collapsed;
-        NotchLabel.Text = Host.Media.Current is { } m ? m.Title : timer.Running ? "Waktunya fokus" : "Momo";
+        NotchLabel.Text = Host.ActiveMedia is { } m ? (cue.Paused ? "Ⅱ " : "") + m.Title : timer.Running ? "Waktunya fokus" : "Momo";
+        NotchLyrics.Visibility = notch && cue.ExpandedNotch ? Visibility.Visible : Visibility.Collapsed;
+        NotchLyricLine.Text = cue.Current; NotchNextLine.Text = cue.Next;
         ToolTip = c.Mode == MascotMode.Stationary ? "Diam di sini · klik kanan → Jalan-jalan untuk berjalan lagi" : "Klik untuk membuka panel · seret ke tengah atas untuk notch";
     }
 }

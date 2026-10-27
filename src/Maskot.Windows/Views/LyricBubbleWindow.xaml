@@ -1,0 +1,14 @@
+<Window x:Class="Maskot.Windows.Views.LyricBubbleWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="Momo — lirik" Width="308" Height="106" WindowStyle="None" AllowsTransparency="True"
+ Background="Transparent" ResizeMode="NoResize" ShowInTaskbar="False" ShowActivated="False" Topmost="True">
+ <Grid><Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="8" /></Grid.RowDefinitions>
+  <Border Background="#F216161B" BorderBrush="#505058" BorderThickness="1" CornerRadius="16" Padding="13,9">
+   <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="22" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+    <TextBlock x:Name="Symbol" Text="♫" Foreground="#B6D3FF" FontSize="20" VerticalAlignment="Center" />
+    <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock x:Name="Line" FontSize="13" FontWeight="SemiBold" Foreground="White" TextWrapping="Wrap" LineHeight="18" MaxHeight="54" TextTrimming="CharacterEllipsis" /><TextBlock x:Name="Song" FontSize="10" Foreground="#9898A3" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" /></StackPanel>
+   </Grid>
+  </Border>
+  <Path Grid.Row="1" Data="M0,0 L8,8 L16,0" Fill="#F216161B" Stroke="#505058" StrokeThickness="1" HorizontalAlignment="Center" />
+ </Grid>
+</Window>

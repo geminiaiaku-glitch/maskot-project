@@ -44,4 +44,10 @@ public static class DesktopGeometry
         if (y + height > work.Bottom) y = body.Y - height - gap;
         return work.Clamp(new(body.Center.X - width / 2, y), width, height);
     }
+    public static PointD PlaceLyrics(RectD body, RectD work, double width, double height, double gap = 8)
+    {
+        var y = body.Y - height - gap;
+        if (y < work.Y) y = body.Bottom + gap;
+        return work.Clamp(new(body.Center.X - width / 2, y), width, height);
+    }
 }

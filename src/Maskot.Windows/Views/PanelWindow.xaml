@@ -49,6 +49,8 @@
         <StackPanel><TextBlock Text="LIRIK" FontSize="9" Foreground="#869CB9" Margin="0,0,0,8" />
          <TextBlock x:Name="LyricText" Text="Aktifkan lirik online di Setelan untuk menemani musikmu." FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="#E1EBFF" LineHeight="24" MaxHeight="78" />
          <TextBlock x:Name="LyricStatus" Style="{StaticResource Caption}" Margin="0,7,0,0" FontSize="10" />
+         <StackPanel x:Name="LyricsConsent" Margin="0,8,0,0"><TextBlock Text="Judul, artis, dan durasi lagu dikirim ke LRCLIB untuk mencari lirik." Style="{StaticResource Caption}" FontSize="10" /><Button Content="Aktifkan lirik online" Style="{StaticResource Primary}" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="9,5" FontSize="11" Click="EnableLyricsClicked" /></StackPanel>
+         <Button x:Name="RetryLyrics" Content="Cari lagi" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="9,4" FontSize="10" Click="RetryLyricsClicked" Visibility="Collapsed" />
         </StackPanel>
        </Border>
       </StackPanel>
@@ -117,7 +119,7 @@
        <TextBlock Text="Jika diaktifkan, judul lagu, artis, dan durasi dikirim ke lrclib.net lewat HTTPS. Tanpa akun atau API key. Tidak ada telemetry." Style="{StaticResource Caption}" />
        <Border Background="#151518" CornerRadius="12" Padding="13" Margin="0,20,0,15"><TextBlock Text="Seret Momo ke tengah atas monitor, lalu lepaskan untuk menjadi notch. Tarik notch ke bawah untuk mengembalikannya. Escape membatalkan drag." Style="{StaticResource Caption}" /></Border>
        <Button Content="Keluar sepenuhnya" HorizontalAlignment="Left" Click="QuitClicked" />
-       <TextBlock Text="Maskot 0.2 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
+       <TextBlock Text="Maskot 0.3 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
       </StackPanel>
      </ScrollViewer>
     </TabItem>

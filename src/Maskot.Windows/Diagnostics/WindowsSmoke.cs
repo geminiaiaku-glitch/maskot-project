@@ -87,6 +87,51 @@ internal static class WindowsSmoke
             Check("hidden_character_animation_clock_stops", !mascot.Character.IsVisible);
             var hiddenFrames = mascot.Character.FramesRendered; await Task.Delay(150);
             Check("no_hidden_animation_polling", mascot.Character.FramesRendered == hiddenFrames);
+
+            // Original test lyrics only; never capture real user media or copyrighted song text.
+            app.State.Preferences.LyricsEnabled = true;
+            var song = new MediaView("test.karaoke", "Uji Karaoke Momo", "Momo Studio · uji", null,
+                TimeSpan.Zero, TimeSpan.FromSeconds(12), true, false, false, false, false);
+            var lyrics = LyricsDocument.FromText("[00:00.00]Langkah kecil menemani hari\n[00:03.00]Nada ringan membawa cerita\n[00:07.00]Momo tersenyum di sini", null);
+            app.SetKaraokeFixture(song, lyrics, TimeSpan.FromSeconds(1)); await Task.Delay(150);
+            Check("lyric_notch_expands", Desktop.WindowBounds(mascot).Width >= 400 && Desktop.WindowBounds(mascot).Height >= 90);
+            Check("notch_displays_active_lyric", mascot.NotchLyricLine.Text == "Langkah kecil menemani hari");
+            Capture((FrameworkElement)mascot.Content, Path.Combine(output, "karaoke-notch.png"));
+            app.SeekKaraokeFixture(TimeSpan.FromSeconds(5)); await Task.Delay(100);
+            Check("notch_lyrics_follow_seek", mascot.NotchLyricLine.Text == "Nada ringan membawa cerita");
+            app.SeekKaraokeFixture(TimeSpan.FromSeconds(1)); await Task.Delay(80);
+            Check("notch_lyrics_follow_rewind", mascot.NotchLyricLine.Text == "Langkah kecil menemani hari");
+
+            var lookups = app.FixtureLyricsRequests;
+            app.Walk(); app.Stay(); app.Render(); await Task.Delay(160);
+            Check("mode_change_keeps_lyrics_without_refetch", app.FixtureLyricsRequests == lookups && app.Cue.Current == "Langkah kecil menemani hari");
+            Check("momo_holds_microphone", mascot.Character.Microphone.IsVisible);
+            Check("momo_singing_mouth_visible", mascot.Character.SingingMouth.IsVisible && mascot.Character.Performance == KaraokeMood.Singing);
+            Check("lyric_bubble_visible", app.BubbleForDiagnostics?.IsVisible == true && app.BubbleForDiagnostics.CurrentLine == "Langkah kecil menemani hari");
+            Check("lyric_bubble_does_not_capture_clicks_or_focus", Desktop.IsPassiveClickThrough(app.BubbleForDiagnostics!));
+            var singingA = Capture(mascot.Character, Path.Combine(output, "momo-singing-a.png"));
+            Capture((FrameworkElement)app.BubbleForDiagnostics!.Content, Path.Combine(output, "momo-lyric-bubble.png"));
+            await Task.Delay(230);
+            var singingB = Capture(mascot.Character, Path.Combine(output, "momo-singing-b.png"));
+            Check("singing_pixels_animate", singingA != singingB);
+
+            app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Missing), TimeSpan.FromSeconds(5)); await Task.Delay(120);
+            Check("missing_lyrics_make_momo_confused", mascot.Character.QuestionMark.IsVisible && mascot.Character.Microphone.IsVisible && mascot.Character.Performance == KaraokeMood.Confused);
+            Capture(mascot.Character, Path.Combine(output, "momo-confused.png"));
+            Capture((FrameworkElement)app.BubbleForDiagnostics!.Content, Path.Combine(output, "momo-confused-bubble.png"));
+            app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Error), TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("lyric_connection_error_is_handled", app.Cue.Mood == KaraokeMood.Confused && app.BubbleForDiagnostics!.IsVisible);
+
+            app.SetKaraokeFixture(song with { Playing = false }, lyrics, TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("pause_stops_singing_and_bubble", !mascot.Character.SingingMouth.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            app.SetKaraokeFixture(null, LyricsDocument.Empty(LyricsAvailability.None), TimeSpan.Zero); await Task.Delay(80);
+            Check("no_media_removes_microphone", !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            app.State.Preferences.LyricsEnabled = false;
+            lookups = app.FixtureLyricsRequests;
+            app.SetKaraokeFixture(song, lyrics, TimeSpan.Zero); await Task.Delay(80);
+            Check("lyrics_opt_in_is_respected", app.FixtureLyricsRequests == lookups && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+
+            await ProbeLyricsProviderAsync(output);
         }
         catch (Exception e)
         {
@@ -99,11 +144,25 @@ internal static class WindowsSmoke
             File.WriteAllText(Path.Combine(output, "result.json"), JsonSerializer.Serialize(new
             {
                 passed = exit == 0, platform = Environment.OSVersion.ToString(), finishedUtc = DateTimeOffset.UtcNow,
-                scope = "WPF rendering, actual window movement, fullscreen Z-order, panel layout; not an interactive Windows 11 acceptance test",
+                scope = "WPF rendering, window movement, fullscreen layer, karaoke fixtures and timeline; real player integration still requires manual testing",
                 checks
             }, new JsonSerializerOptions { WriteIndented = true }));
             app.Quit(exit);
         }
+    }
+    private static async Task ProbeLyricsProviderAsync(string output)
+    {
+        // Public test metadata only. Store availability/counts, never the returned song lyrics.
+        using var client = new LyricsClient();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(23));
+        object result;
+        try
+        {
+            var doc = await client.FetchAsync(new("diagnostic", "Never Gonna Give You Up", "Rick Astley", 213), timeout.Token);
+            result = new { reachable = doc.Availability != LyricsAvailability.Error, availability = doc.Availability.ToString(), timedLineCount = doc.Lines.Count, plainLyricsAvailable = doc.Plain.Length > 0 };
+        }
+        catch (Exception e) { result = new { reachable = false, failure = e.GetType().Name }; }
+        File.WriteAllText(Path.Combine(output, "provider-probe.json"), JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
     }
 
     private static string Capture(FrameworkElement visual, string path)

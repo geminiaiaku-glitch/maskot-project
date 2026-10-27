@@ -18,7 +18,18 @@ public partial class App : Application
     internal MascotController Controller { get; } = new();
     internal IReadOnlyList<DisplayArea> Displays { get; private set; } = [];
     internal MediaService Media { get; } = new();
-    internal LyricsService Lyrics { get; } = new();
+    internal KaraokeSession Karaoke { get; private set; } = null!;
+    private LyricsClient? _lyricsClient;
+    private FixtureLyricsSource? _fixtureLyrics;
+    private MediaView? _fixtureMedia;
+    private TimeSpan _fixturePosition;
+    private bool _fixtureActive;
+    internal MediaView? ActiveMedia => _fixtureActive ? _fixtureMedia : Media.Current;
+    internal TimeSpan ActivePosition => _fixtureActive ? _fixturePosition : Media.Position;
+    internal string ActiveMediaStatus => _fixtureActive ? "Sesi uji · tanpa audio nyata." : Media.Status;
+    internal KaraokeCue Cue => KaraokeCue.Create(Karaoke.Document, !string.IsNullOrWhiteSpace(ActiveMedia?.Title), ActiveMedia?.Playing == true, ActivePosition, State.Preferences.LyricsEnabled);
+    internal LyricBubbleWindow? BubbleForDiagnostics => _lyricBubble;
+    internal int FixtureLyricsRequests => _fixtureLyrics?.Requests ?? 0;
     internal bool Exiting { get; private set; }
     internal bool PanelVisible => _panel?.IsVisible == true;
     internal MascotWindow MascotForDiagnostics => _mascot!;
@@ -28,6 +39,7 @@ public partial class App : Application
     private MascotWindow? _mascot;
     private PanelWindow? _panel;
     private DockHintWindow? _hint;
+    private LyricBubbleWindow? _lyricBubble;
     private Forms.NotifyIcon? _tray;
     private Drawing.Icon? _icon;
     private StateStore _store = null!;
@@ -56,9 +68,12 @@ public partial class App : Application
         _store = new(SmokeMode ? Path.Combine(Path.GetTempPath(), "maskot-smoke-" + Guid.NewGuid())
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Maskot"));
         State = _store.Load(); State.Normalize();
+        if (SmokeMode) { _fixtureLyrics = new(); Karaoke = new(_fixtureLyrics); }
+        else { _lyricsClient = new(); Karaoke = new(_lyricsClient); }
+        Karaoke.Changed += KaraokeChanged;
         Displays = Desktop.Displays();
         ApplyPreferences(); Controller.Restore(State.Placement, Displays);
-        _mascot = new(); MainWindow = _mascot; _hint = new();
+        _mascot = new(); MainWindow = _mascot; _hint = new(); _lyricBubble = new();
         _mascot.Show(); CreateTray(); Render();
         Media.Changed += MediaChanged;
         if (!SmokeMode) _ = Media.InitializeAsync();
@@ -89,8 +104,26 @@ public partial class App : Application
     private void MediaChanged()
     {
         if (Exiting || Dispatcher.HasShutdownStarted) return;
-        Dispatcher.BeginInvoke(() => { if (!Exiting) { _panel?.RefreshMedia(); _mascot?.UpdateAppearance(); } });
+        Dispatcher.BeginInvoke(() => { if (!Exiting) { RefreshKaraoke(); _panel?.RefreshMedia(); Render(); } });
     }
+    private void KaraokeChanged()
+    {
+        if (Exiting || Dispatcher.HasShutdownStarted) return;
+        Dispatcher.BeginInvoke(() => { if (!Exiting) { _panel?.RefreshLyrics(); Render(); } });
+    }
+    internal void RefreshKaraoke(bool force = false)
+    {
+        if (Karaoke is null) return;
+        var m = ActiveMedia;
+        Karaoke.Update(m is null ? null : new(m.Source, m.Title, m.Artist, m.Duration.TotalSeconds), State.Preferences.LyricsEnabled, force);
+    }
+    internal void SetKaraokeFixture(MediaView? media, LyricsDocument document, TimeSpan position)
+    {
+        if (!SmokeMode) throw new InvalidOperationException("Fixtures are restricted to --self-test.");
+        _fixtureActive = true; _fixtureMedia = media; _fixturePosition = position; _fixtureLyrics!.Document = document;
+        RefreshKaraoke(true); _panel?.RefreshMedia(); Render();
+    }
+    internal void SeekKaraokeFixture(TimeSpan position) { if (!SmokeMode) throw new InvalidOperationException(); _fixturePosition = position; Render(); }
 
     private void Tick(object? sender, EventArgs e)
     {
@@ -105,7 +138,9 @@ public partial class App : Application
             var display = CurrentDisplay();
             var hidden = State.Preferences.HideInFullscreen && now >= _forceVisibleUntil && Desktop.FullscreenOn(display) && !PanelVisible && !Controller.PointerHeld;
             if (hidden) _mascot?.Hide(); else if (_mascot?.IsVisible == false) _mascot.Show();
+            if (hidden) _lyricBubble?.Hide();
             if (!hidden && !Controller.PanelOpen && _mascot is not null) Desktop.KeepAbove(_mascot);
+            if (!hidden && !Controller.PanelOpen && _lyricBubble is not null) Desktop.KeepAbove(_lyricBubble);
             if (State.Timer.Advance(now)) { SaveNow(); Notify(State.Timer.Phase == FocusPhase.Break ? "Sesi fokus selesai. Saatnya beristirahat. Buka panel untuk memulai istirahat." : "Istirahat selesai. Mulai sesi fokus saat kamu siap."); }
             _panel?.Tick(); _mascot?.UpdateAppearance();
         }
@@ -113,8 +148,9 @@ public partial class App : Application
         {
             Controller.Tick(delta, SmokeMode ? new(-99999, -99999) : Desktop.Cursor, Displays); Render();
         }
+        _panel?.RefreshLyrics();
         if (_saveAt is { } due && now >= due || elapsed - _lastSave >= 15) SaveNow();
-        var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : 200;
+        var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : ActiveMedia?.Playing == true && State.Preferences.LyricsEnabled ? 100 : 200;
         if (_tick is not null && _tick.Interval.TotalMilliseconds != interval) _tick.Interval = TimeSpan.FromMilliseconds(interval);
     }
 
@@ -124,16 +160,22 @@ public partial class App : Application
         Controller.Size = State.Preferences.Size; Controller.Speed = State.Preferences.WalkSpeed;
         Controller.ExtraAnimations = State.Preferences.ExtraAnimations;
         if (Displays.Count > 0) Controller.ReconcileDisplays(Displays);
+        RefreshKaraoke();
         Render();
     }
     internal void Render()
     {
         if (_mascot is null || Displays.Count == 0) return;
+        var cue = Cue;
+        Controller.SetLyricNotch(cue.ExpandedNotch, Displays);
         var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
         _mascot.UpdateAppearance(); Desktop.Position(_mascot, Controller.Position, w, h);
         if (Controller.Dragging && Controller.DockNearby && Controller.DragDisplay is { } dragDisplay)
             _hint?.Update(dragDisplay, Controller.DockEligible);
         else _hint?.Hide();
+        if (_mascot.IsVisible && Controller.Mode != MascotMode.Notch && cue.ShowBubble && !Controller.Dragging && !Controller.PanelOpen)
+            _lyricBubble?.Update(cue, ActiveMedia?.Title ?? "", new(Controller.Position.X, Controller.Position.Y, w, h), d);
+        else _lyricBubble?.Hide();
         if (PanelVisible) PositionPanel();
     }
     private void PositionPanel()
@@ -158,6 +200,11 @@ public partial class App : Application
         Controller.SetPanel(true);
         if (settings) _panel.OpenSettings();
         _panel.RefreshContent(); _panel.RefreshMedia(); _panel.Show(); PositionPanel(); _panel.Activate(); _panel.Tick(); Render();
+    }
+    internal void OpenLyricsPanel() { OpenPanel(); _panel?.ShowLyrics(); }
+    internal void EnableLyrics()
+    {
+        State.Preferences.LyricsEnabled = true; RefreshKaraoke(); SaveNow(); _panel?.RefreshLyrics(); Render();
     }
     internal void ClosePanel()
     {
@@ -200,6 +247,7 @@ public partial class App : Application
         menu.Items.Add("Tampilkan Momo", null, (_, _) => { _forceVisibleUntil = DateTimeOffset.UtcNow.AddSeconds(10); _mascot?.Show(); Render(); });
         menu.Items.Add("Buka panel", null, (_, _) => OpenPanel());
         menu.Items.Add("Pengaturan", null, (_, _) => OpenPanel(true));
+        menu.Items.Add("Lirik & karaoke", null, (_, _) => OpenLyricsPanel());
         menu.Items.Add("Jalan-jalan", null, (_, _) => Walk());
         menu.Items.Add(new Forms.ToolStripSeparator()); menu.Items.Add("Keluar", null, (_, _) => Quit());
         menu.Opening += (_, _) => Controller.SetPanel(true);
@@ -217,10 +265,12 @@ public partial class App : Application
     {
         if (Exiting) return;
         Exiting = true; _tick?.Stop(); Controller.CancelDrag();
-        SaveNow(); Media.Changed -= MediaChanged; Media.Dispose(); Lyrics.Dispose();
+        SaveNow(); Media.Changed -= MediaChanged; Media.Dispose();
+        if (Karaoke is not null) { Karaoke.Changed -= KaraokeChanged; Karaoke.Dispose(); }
+        _lyricsClient?.Dispose();
         if (_tray is not null) { _tray.Visible = false; _tray.Dispose(); }
         _icon?.Dispose();
-        _panel?.Close(); _hint?.Close(); _mascot?.Close();
+        _panel?.Close(); _hint?.Close(); _lyricBubble?.Close(); _mascot?.Close();
         _instance?.Dispose(); Shutdown(exitCode);
     }
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e) { SaveNow(); base.OnSessionEnding(e); }

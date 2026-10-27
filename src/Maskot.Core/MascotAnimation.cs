@@ -2,21 +2,24 @@ namespace Maskot.Core;
 
 public readonly record struct MascotFrame(double Bob, double Lean, double HeadAngle,
     double LeftFoot, double RightFoot, double LeftArm, double RightArm,
-    double TailAngle, double EyeScale, double Breathe, double SleepOpacity);
+    double TailAngle, double EyeScale, double Breathe, double SleepOpacity, double MouthOpen = 0, double QuestionOpacity = 0);
 
 /// <summary>Samples articulated animation independently from walking and panel state.</summary>
 public static class MascotAnimation
 {
-    public static MascotFrame Sample(MascotPose pose, double seconds, bool enabled = true)
+    public static MascotFrame Sample(MascotPose pose, double seconds, bool enabled = true, KaraokeMood performance = KaraokeMood.None)
     {
-        if (!enabled) return new(0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0);
+        if (pose == MascotPose.Lifted) performance = KaraokeMood.None;
+        if (!enabled) return new(0, 0, performance == KaraokeMood.Confused ? 12 : 0, 0, 0, 0,
+            performance == KaraokeMood.None ? 0 : -28, 0, 1, 1, 0, 0, performance == KaraokeMood.Confused ? 1 : 0);
         seconds = double.IsFinite(seconds) ? Math.Max(0, seconds) : 0;
         var breath = Math.Sin(seconds * Math.Tau / 3.2);
         var stride = Math.Sin(seconds * Math.Tau / .72);
         var blinkPhase = seconds % 4.1;
         var eyes = blinkPhase < .14 ? .08 + .92 * Math.Abs(blinkPhase - .07) / .07 : 1;
         var tail = Math.Sin(seconds * Math.Tau / 2.4) * 15;
-        return pose switch
+        var effectivePose = performance != KaraokeMood.None && pose is MascotPose.Sleep or MascotPose.Sit ? MascotPose.Idle : pose;
+        MascotFrame frame = effectivePose switch
         {
             MascotPose.Walk => new(-2 - Math.Abs(stride) * 4.5, stride * 2.5, -stride * 2,
                 stride * 24, -stride * 24, -stride * 13, stride * 13, tail, eyes, 1, 0),
@@ -30,6 +33,15 @@ public static class MascotAnimation
                 0, 0, 0, -35 + Math.Sin(seconds * 10) * 18, tail, eyes, 1 + breath * .02, 0),
             _ => new(breath * 2.8, 0, Math.Sin(seconds * 1.2) * 3, 0, 0,
                 breath * 3, -breath * 3, tail, eyes, 1 + breath * .025, 0)
+        };
+        return performance switch
+        {
+            KaraokeMood.Singing => frame with { HeadAngle = frame.HeadAngle + Math.Sin(seconds * 5) * 4,
+                RightArm = -28 + Math.Sin(seconds * 4) * 4, MouthOpen = .25 + .75 * Math.Abs(Math.Sin(seconds * 8)), SleepOpacity = 0 },
+            KaraokeMood.Confused => frame with { HeadAngle = 13 + Math.Sin(seconds * 1.8) * 7, RightArm = 8 + Math.Sin(seconds * 2.7) * 8,
+                QuestionOpacity = .75 + Math.Sin(seconds * 3) * .25, SleepOpacity = 0 },
+            KaraokeMood.Listening => frame with { HeadAngle = 3 + Math.Sin(seconds * 1.8) * 3, RightArm = -24, SleepOpacity = 0 },
+            _ => frame
         };
     }
 }

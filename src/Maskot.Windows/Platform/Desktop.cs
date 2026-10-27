@@ -134,4 +134,9 @@ internal static class Desktop
         { h = GetWindow(h, 3); if (h == target) return true; }
         return false;
     }
+    public static bool IsPassiveClickThrough(Window window)
+    {
+        var style = GetWindowLongPtr(new WindowInteropHelper(window).Handle, -20).ToInt64();
+        return (style & 0x08000020L) == 0x08000020L;
+    }
 }

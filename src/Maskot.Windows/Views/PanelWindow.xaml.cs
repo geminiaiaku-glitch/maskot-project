@@ -11,9 +11,6 @@ public partial class PanelWindow : Window
 {
     private App Host => (App)Application.Current;
     private bool _initializing = true, _refreshing, _seeking;
-    private string? _lyricsKey;
-    private int _lyricsRevision;
-    private LyricsResult? _lyrics;
     private Point _shelfStart;
     private ShelfItem? _shelfDrag;
     private bool _nativeDialog;
@@ -34,7 +31,7 @@ public partial class PanelWindow : Window
     internal void RefreshContent() => RefreshLists();
     internal double PreferredHeight => Tabs.SelectedIndex switch
     {
-        0 => 368 + (LyricsPane.Visibility == Visibility.Visible ? 130 : 0) + (SourcePicker.Visibility == Visibility.Visible ? 38 : 0),
+        0 => 368 + (LyricsPane.Visibility == Visibility.Visible ? Host.State.Preferences.LyricsEnabled ? 170 : 210 : 0) + (SourcePicker.Visibility == Visibility.Visible ? 38 : 0),
         1 => 440, 2 => 560, _ => 580
     };
     internal void SelectTab(int index) => Tabs.SelectedIndex = index;
@@ -62,7 +59,7 @@ public partial class PanelWindow : Window
         _refreshing = true;
         try
         {
-            var media = Host.Media.Current;
+            var media = Host.ActiveMedia;
             var sources = Host.Media.Sources;
             if (!Sources.Items.Cast<string>().SequenceEqual(sources)) Sources.ItemsSource = sources;
             Sources.SelectedItem = media?.Source;
@@ -75,7 +72,7 @@ public partial class PanelWindow : Window
             Seek.IsEnabled = media?.CanSeek == true;
             Seek.Maximum = Math.Max(1, media?.Duration.TotalSeconds ?? 1);
             Duration.Text = Format(media?.Duration ?? TimeSpan.Zero);
-            MediaStatus.Text = Host.Media.Status;
+            MediaStatus.Text = Host.ActiveMediaStatus;
             RefreshLyrics();
         }
         finally { _refreshing = false; }
@@ -83,7 +80,7 @@ public partial class PanelWindow : Window
     private async void RefreshMediaClicked(object sender, RoutedEventArgs e)
     {
         if (Host.Media.Sources.Count == 0) await Host.Media.InitializeAsync(); else await Host.Media.RefreshAsync();
-        _lyricsKey = null; RefreshMedia();
+        Host.RefreshKaraoke(true); RefreshMedia();
     }
     private void SourceChanged(object sender, SelectionChangedEventArgs e) { if (!_refreshing && Sources.SelectedItem is string s) Host.Media.Select(s); }
     private async void PlayClicked(object sender, RoutedEventArgs e) => await Host.Media.CommandAsync("play");
@@ -99,43 +96,41 @@ public partial class PanelWindow : Window
     {
         if (!IsVisible) return;
         PanelClock.Text = DateTime.Now.ToString("HH:mm");
-        PanelBars.IsActive = Host.Media.Current?.Playing == true && Host.State.Preferences.ExtraAnimations;
+        PanelBars.IsActive = Host.ActiveMedia?.Playing == true && Host.State.Preferences.ExtraAnimations;
         ModeStatus.Text = Host.Controller.Mode switch
         {
             MascotMode.Walking => "● Berjalan", MascotMode.Stationary => "● Diam di sini", _ => "● Notch"
         } + (Host.State.Preferences.HideInFullscreen ? " · sembunyi saat fullscreen" : " · selalu di atas");
         ModeAction.Content = Host.Controller.Mode == MascotMode.Walking ? "Diam" : "Jalan-jalan";
-        if (!_seeking) Seek.Value = Host.Media.Position.TotalSeconds;
-        Elapsed.Text = Format(Host.Media.Position);
+        if (!_seeking) Seek.Value = Host.ActivePosition.TotalSeconds;
+        Elapsed.Text = Format(Host.ActivePosition);
         var timer = Host.State.Timer;
         Countdown.Text = Format(TimeSpan.FromSeconds(timer.Remaining(DateTimeOffset.UtcNow)));
         PhaseLabel.Text = timer.Phase == FocusPhase.Focus ? "WAKTU FOKUS" : "WAKTU ISTIRAHAT";
         StartPause.Content = timer.Running ? "Jeda" : timer.Phase == FocusPhase.Focus ? "Mulai fokus" : "Mulai istirahat";
         TimerStatus.Text = timer.Running ? "Momo menjaga waktu untukmu." : "Tarik napas. Mulai saat kamu siap.";
         FocusMinutes.IsEnabled = BreakMinutes.IsEnabled = !timer.Running;
-        if (_lyrics?.Lines.Count > 0) LyricText.Text = LrcParser.Current(_lyrics.Lines, Host.Media.Position) is { Length: > 0 } line ? line : "♫";
+        RefreshLyrics();
     }
     private static string Format(TimeSpan t) => t.TotalHours >= 1 ? $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}" : $"{(int)t.TotalMinutes:00}:{t.Seconds:00}";
-    private async void RefreshLyrics()
+    internal void RefreshLyrics()
     {
-        if (!Host.State.Preferences.LyricsEnabled)
-        {
-            _lyricsRevision++; _lyricsKey = null; _lyrics = null; Host.Lyrics.Cancel();
-            LyricText.Text = "Aktifkan lirik online di Setelan untuk menemani musikmu."; LyricStatus.Text = ""; return;
-        }
-        var media = Host.Media.Current;
-        var key = media is null ? "" : $"{media.Source}\n{media.Title}\n{media.Artist}\n{(int)media.Duration.TotalSeconds}";
-        if (_lyricsKey == key) return;
-        _lyricsKey = key; _lyrics = null;
-        var version = ++_lyricsRevision;
-        LyricText.Text = media is null ? "Putar lagu untuk melihat lirik." : "Mencari lirik…";
-        LyricStatus.Text = "";
-        if (media is null || string.IsNullOrWhiteSpace(media.Title)) return;
-        var result = await Host.Lyrics.FetchAsync(media);
-        if (version != _lyricsRevision) return;
-        _lyrics = result; LyricStatus.Text = result.Status;
-        LyricText.Text = result.Lines.Count > 0 ? LrcParser.Current(result.Lines, Host.Media.Position) : result.Plain.Length > 0 ? result.Plain : "Belum ada lirik.";
+        if (_initializing) return;
+        var cue = Host.Cue;
+        var doc = Host.Karaoke.Document;
+        OnlineLyrics.IsChecked = Host.State.Preferences.LyricsEnabled;
+        LyricText.Text = !Host.State.Preferences.LyricsEnabled || Host.ActiveMedia is null ? cue.Caption
+            : doc.Availability == LyricsAvailability.Plain ? doc.Plain : cue.Current;
+        LyricStatus.Text = cue.Caption;
+        LyricsConsent.Visibility = Host.State.Preferences.LyricsEnabled ? Visibility.Collapsed : Visibility.Visible;
+        RetryLyrics.Visibility = Host.State.Preferences.LyricsEnabled && Host.ActiveMedia is not null ? Visibility.Visible : Visibility.Collapsed;
     }
+    internal void ShowLyrics()
+    {
+        Tabs.SelectedIndex = 0; LyricsPane.Visibility = Visibility.Visible; RefreshLyrics(); Host.RelayoutPanel();
+    }
+    private void EnableLyricsClicked(object sender, RoutedEventArgs e) => Host.EnableLyrics();
+    private void RetryLyricsClicked(object sender, RoutedEventArgs e) => Host.RefreshKaraoke(true);
     private void TimerToggle(object sender, RoutedEventArgs e)
     {
         var timer = Host.State.Timer;
@@ -242,7 +237,7 @@ public partial class PanelWindow : Window
     private void LyricsChanged(object sender, RoutedEventArgs e)
     {
         if (_initializing) return;
-        Host.State.Preferences.LyricsEnabled = OnlineLyrics.IsChecked == true; _lyricsKey = null; RefreshLyrics(); Host.SaveSoon();
+        Host.State.Preferences.LyricsEnabled = OnlineLyrics.IsChecked == true; Host.RefreshKaraoke(); RefreshLyrics(); Host.SaveSoon();
     }
     private void WalkClicked(object sender, RoutedEventArgs e) { Host.Walk(); Host.ClosePanel(); }
     private void ModeActionClicked(object sender, RoutedEventArgs e)

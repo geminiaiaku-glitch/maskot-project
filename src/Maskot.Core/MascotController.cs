@@ -27,10 +27,12 @@ public sealed class MascotController
     public double Size { get; set; } = 1;
     public double Speed { get; set; } = 32;
     public bool ExtraAnimations { get; set; } = true;
+    public double NotchWidth { get; private set; } = 230;
+    public double NotchHeight { get; private set; } = 42;
 
     public MascotController(int? seed = null) => _random = seed is int s ? new(s) : new();
     public (double Width, double Height) Dimensions(double scale) =>
-        Mode == MascotMode.Notch ? (230 * scale, 42 * scale) : (112 * Size * scale, 142 * Size * scale);
+        Mode == MascotMode.Notch ? (NotchWidth * scale, NotchHeight * scale) : (112 * Size * scale, 142 * Size * scale);
     public MascotPlacement Snapshot() => new(Mode, Position, MonitorId);
 
     public void Restore(MascotPlacement? placement, IReadOnlyList<DisplayArea> displays)
@@ -48,7 +50,17 @@ public sealed class MascotController
         _moodSeconds = 8;
     }
 
-    private PointD DockPosition(DisplayArea d) => new(d.Bounds.Center.X - 115 * d.Scale, d.Bounds.Y);
+    private PointD DockPosition(DisplayArea d) => new(d.Bounds.Center.X - NotchWidth * d.Scale / 2, d.Bounds.Y);
+    public void SetLyricNotch(bool expanded, IReadOnlyList<DisplayArea> displays)
+    {
+        if (PointerHeld) return;
+        var display = displays.FirstOrDefault(d => d.Id == MonitorId) ?? DesktopGeometry.Nearest(displays, Position);
+        var width = expanded ? Math.Min(420, display.Bounds.Width / display.Scale - 16) : 230;
+        var height = expanded ? 96 : 42;
+        if (NotchWidth == width && NotchHeight == height) return;
+        NotchWidth = width; NotchHeight = height;
+        if (Mode == MascotMode.Notch) Position = DockPosition(display);
+    }
 
     public void ReconcileDisplays(IReadOnlyList<DisplayArea> displays)
     {

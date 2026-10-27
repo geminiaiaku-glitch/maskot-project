@@ -46,8 +46,19 @@
      <Ellipse Canvas.Left="23" Canvas.Top="67" Width="16" Height="8" Fill="#EFB5A5" />
      <Ellipse Canvas.Left="74" Canvas.Top="67" Width="16" Height="8" Fill="#EFB5A5" />
      <Path Data="M52,66 Q56,63 60,66 L56,70 Z" Fill="#735445" />
-     <Path Data="M47,73 Q51,78 56,72 Q61,78 65,73" Stroke="#735445" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+     <Path x:Name="NormalMouth" Data="M47,73 Q51,78 56,72 Q61,78 65,73" Stroke="#735445" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+     <Ellipse x:Name="SingingMouth" Canvas.Left="52.5" Canvas.Top="70" Width="8" Height="10" Fill="#6D4038" Stroke="#735445" StrokeThickness="1" Visibility="Collapsed" RenderTransformOrigin=".5,.5"><Ellipse.RenderTransform><ScaleTransform x:Name="MouthOpening" ScaleY="1" /></Ellipse.RenderTransform></Ellipse>
+     <Path x:Name="ConfusedBrows" Data="M32,49 Q38,45 42,49 M72,51 L80,47" Stroke="#735445" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed" />
     </Canvas>
+    <Canvas x:Name="Microphone" Width="112" Height="142" Visibility="Collapsed">
+     <Canvas.RenderTransform><RotateTransform x:Name="MicLift" CenterX="84" CenterY="96" /></Canvas.RenderTransform>
+     <Path Data="M73,78 L79,75 L99,109 Q99,113 95,114 Z" Fill="#303442" Stroke="#151823" StrokeThickness="1.4" />
+     <Ellipse Canvas.Left="66" Canvas.Top="61" Width="17" Height="23" Fill="#B8C0CE" Stroke="#333B4B" StrokeThickness="1.7" RenderTransformOrigin=".5,.5"><Ellipse.RenderTransform><RotateTransform Angle="-30" /></Ellipse.RenderTransform></Ellipse>
+     <Path Data="M68,67 L78,65 M68,71 L80,68 M70,75 L81,72" Stroke="#68748A" StrokeThickness="1.2" />
+     <Path Data="M87,99 L91,97 L94,102 L90,104 Z" Fill="#D1D8E5" />
+    </Canvas>
+    <TextBlock x:Name="MusicNote" Canvas.Left="1" Canvas.Top="24" Text="♫" Foreground="#9BC4FF" FontSize="18" Visibility="Collapsed" />
+    <TextBlock x:Name="QuestionMark" Canvas.Left="94" Canvas.Top="12" Text="?" Foreground="#D7C3FF" FontSize="24" FontWeight="SemiBold" Visibility="Collapsed" />
     <TextBlock x:Name="SleepMark" Canvas.Left="88" Canvas.Top="4" Text="z Z" Foreground="#BEDBFA" FontSize="15" FontWeight="Bold" Opacity="0" />
     <TextBlock x:Name="Greeting" Canvas.Left="0" Canvas.Top="26" Text="✦" Foreground="#F4D17C" FontSize="21" Visibility="Collapsed" />
    </Canvas>
