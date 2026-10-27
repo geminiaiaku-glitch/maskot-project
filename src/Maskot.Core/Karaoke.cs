@@ -72,7 +72,8 @@ public sealed record KaraokeCue(KaraokeMood Mood, string Current, string Next, s
 {
     public static KaraokeCue Create(LyricsDocument document, bool hasSong, bool playing, TimeSpan position, bool enabled)
     {
-        if (!hasSong || !enabled) return new(KaraokeMood.None, "", "", hasSong ? "Aktifkan lirik online di Setelan." : "Putar lagu untuk melihat lirik.", false, false, false);
+        if (!hasSong || !enabled) return new(hasSong && playing ? KaraokeMood.Listening : KaraokeMood.None,
+            "", "", hasSong ? "Aktifkan lirik online di Setelan." : "Putar lagu untuk melihat lirik.", false, false, hasSong && !playing);
         var current = ""; var next = ""; var caption = document.Detail; var mood = KaraokeMood.Listening;
         switch (document.Availability)
         {
@@ -90,16 +91,18 @@ public sealed record KaraokeCue(KaraokeMood Mood, string Current, string Next, s
                 next = "Lirik tanpa sinkronisasi"; caption = "Lirik tersedia tanpa penanda waktu · LRCLIB"; mood = KaraokeMood.Singing;
                 break;
             case LyricsAvailability.Missing:
-                current = "Eh… liriknya ke mana?"; next = "Lirik belum tersedia untuk lagu ini."; caption = "Lirik belum tersedia · LRCLIB"; mood = KaraokeMood.Confused; break;
+                caption = "Lirik belum tersedia · LRCLIB"; mood = KaraokeMood.Confused; break;
             case LyricsAvailability.Instrumental:
-                current = "Ini lagu instrumental, ya?"; next = "Tidak ada lirik untuk dinyanyikan."; caption = "Lagu instrumental"; mood = KaraokeMood.Confused; break;
+                caption = "Lagu instrumental"; mood = KaraokeMood.Confused; break;
             case LyricsAvailability.Error:
-                current = "Hmm… liriknya belum ketemu."; next = "Periksa koneksi atau coba lagi dari panel Musik."; caption = "Koneksi lirik bermasalah"; mood = KaraokeMood.Confused; break;
+                caption = "Koneksi lirik bermasalah"; mood = KaraokeMood.Confused; break;
             default:
-                current = "Mencari lirik…"; next = "Sebentar, Momo menyiapkan mikrofon."; caption = "Mencari di LRCLIB"; break;
+                caption = "Mencari di LRCLIB"; break;
         }
-        if (!playing) { mood = KaraokeMood.Listening; caption = "Dijeda · " + caption; }
-        return new(mood, current, next, caption, true, playing, !playing, document.Availability == LyricsAvailability.Synced);
+        if (!playing) { mood = KaraokeMood.None; caption = "Dijeda · " + caption; }
+        return new(mood, current, next, caption,
+            document.Availability is LyricsAvailability.Synced or LyricsAvailability.Plain,
+            mood == KaraokeMood.Singing, !playing, document.Availability == LyricsAvailability.Synced);
     }
 }
 

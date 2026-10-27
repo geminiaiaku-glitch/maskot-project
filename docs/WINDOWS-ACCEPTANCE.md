@@ -35,6 +35,11 @@ startup harus mati pada profil baru. Data uji dapat dicadangkan dari LocalAppDat
 - [ ] Lirik default mati; aktifkan dan periksa lagu dengan LRC, plain lyrics,
   instrumental, tidak ditemukan dan offline. Ganti lagu cepat: tidak muncul lirik
   lagu sebelumnya. Kegagalan lirik tidak menghalangi media.
+- [ ] Mic hanya terlihat saat musik diputar, termasuk saat lirik online mati.
+  Pause/stop/tutup pemutar menyembunyikan mic dan ekspresi karaoke; resume
+  memulihkannya. Lirik hilang/instrumental/offline memakai wajah/gestur bingung
+  tanpa tulisan atau balon status, dan notch tetap ringkas. Loading tidak membuka
+  balon; baris lirik tersedia tetap tampil dan mengikuti seek.
 - [ ] Pomodoro: mulai/jeda/lanjut/reset, atur fokus/istirahat. Tutup panel dan dock/
   undock: tetap akurat. Tidurkan PC melewati deadline: satu notifikasi selesai,
   fase berikutnya menunggu Mulai. Restart dengan timer aktif memulihkan deadline.

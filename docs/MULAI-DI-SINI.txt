@@ -1,4 +1,4 @@
-MASKOT / MOMO — VERSI PERCOBAAN 0.3
+MASKOT / MOMO — VERSI PERCOBAAN 0.3.1
 
 Untuk Windows 11 64-bit.
 
@@ -39,6 +39,8 @@ Baca TESTING.md dan WINDOWS-ACCEPTANCE.md untuk rincian status pengujian.
 KARAOKE / LIRIK
 Klik kanan Momo → Lirik & karaoke → Aktifkan lirik online, lalu putar lagu.
 Judul/artis/durasi lagu dikirim ke LRCLIB. Notch menampilkan lirik; Momo bernyanyi
-dengan mic dan balon teks. Jika lirik tidak tersedia, Momo berekspresi bingung.
-Tidak ada rekaman mikrofon atau suara tambahan. Saat jeda, animasi bernyanyi berhenti.
+dengan mic dan balon lirik. Jika lirik tidak tersedia, Momo menunjukkan wajah dan
+gestur bingung tanpa tulisan. Mic hanya muncul saat musik diputar, termasuk bila
+lirik online dimatikan. Saat jeda/berhenti, mic ikut hilang.
+Tidak ada rekaman mikrofon atau suara tambahan.
 Teks tanpa timestamp diberi label tanpa sinkronisasi.

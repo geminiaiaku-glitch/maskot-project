@@ -1,41 +1,35 @@
-**Maskot / Momo 0.3 — karaoke dan lirik** untuk Windows x64.
+**Maskot / Momo 0.3.1 — mic mengikuti musik, ekspresi bingung tanpa tulisan** untuk Windows x64.
 
-## Fitur baru
+## Perbaikan
 
-- Notch menampilkan baris lirik aktif dan baris berikutnya, mengikuti posisi lagu.
-- Dalam mode Momo, karakter memegang mikrofon, menggerakkan mulut dan bergoyang.
-  Lirik muncul di balon teks dekat Momo yang tidak menghalangi klik ke aplikasi lain.
-- Saat lirik tidak tersedia, Momo memiringkan kepala, memeriksa mic dan menampilkan
-  tanda tanya. Loading, instrumental, offline dan jeda ditangani terpisah.
-- Lirik terus mengikuti lagu meskipun panel tertutup atau mode Momo/notch berganti.
-- Seek maju/mundur langsung memilih baris yang sesuai. Posisi media tanpa durasi
-  dan playback rate juga ditangani.
+- Mic hanya terlihat saat musik sedang diputar. Pause, stop atau sesi media hilang
+  menyembunyikan mic dan mengembalikan wajah Momo ke keadaan biasa.
+- Saat musik dilanjutkan, mic dan pose bernyanyi/bingung kembali mengikuti lagu.
+- Jika lirik tidak tersedia, instrumental atau koneksi gagal, Momo memiringkan
+  kepala, mengubah alis/mulut dan menggerakkan tangan/mic. Tidak ada pesan tulisan,
+  tanda tanya atau balon status pada Momo. Notch tetap ringkas tanpa pesan fallback.
+- Balon teks hanya muncul untuk lirik yang tersedia. Loading tidak membuka balon.
+- Saat musik diputar dengan lirik online mati, Momo tetap memegang mic tanpa
+  mengirim permintaan lirik ke jaringan.
+- Lirik tersinkron, seek/rewind, perubahan mode dan balon pasif tetap tersedia.
 
-## Cara memperbarui dan mengaktifkan
+## Cara memperbarui
 
 1. Klik kanan Momo lama → **Keluar**.
-2. Unduh **Maskot-win-x64.zip**, pilih **Extract All / Ekstrak Semua**, lalu jalankan
-   **Maskot.exe** dari folder baru. Data catatan/tugas tetap tersimpan.
-3. Klik kanan Momo → **Lirik & karaoke** → **Aktifkan lirik online**.
-   Bisa juga melalui Setelan → Lirik online melalui LRCLIB.
-4. Putar lagu pada pemutar yang menyediakan sesi media Windows. Pilih sumber
-   melalui panel Musik jika beberapa pemutar aktif.
+2. Unduh **Maskot-win-x64.zip** → **Extract All / Ekstrak Semua** → jalankan
+   **Maskot.exe** dari folder baru. Catatan/tugas/pengaturan tetap tersimpan.
+3. Untuk menampilkan lirik: klik kanan Momo → **Lirik & karaoke** →
+   **Aktifkan lirik online**, lalu putar lagu.
 
-Lirik bersifat opt-in. Judul, artis dan durasi dikirim lewat HTTPS ke LRCLIB.
-Tidak memerlukan akun/API key. Mikrofon adalah aksesori animasi: tidak merekam
-atau mengakses perangkat mikrofon dan tidak menambahkan suara/vokal.
+Lirik online bersifat opt-in dan mengirim judul, artis serta durasi lewat HTTPS ke
+LRCLIB. Mic adalah aksesori animasi; tidak mengakses/rekam perangkat mikrofon atau
+menambahkan vokal. Suara tetap dari pemutar musik. Tidak semua lagu memiliki lirik
+tersinkron; plain lyrics tetap diberi label tanpa sinkronisasi.
 
-## Batas dan pengujian
+## Validasi
 
-Sinkronisasi mengikuti timestamp yang disediakan sumber, bukan pengenalan suara.
-Jika hanya ada plain lyrics, teks diberi label **tanpa sinkronisasi**; waktu baris
-tidak ditebak. Tidak semua lagu tersedia atau memiliki metadata yang cocok.
-Kegagalan layanan lirik tidak mematikan kontrol musik. Tombol **Cari lagi** ada
-pada panel Lirik.
-
-Tes core dan regresi WPF Windows memeriksa timeline, cancellation/stale response,
-cache/HTTP, pergantian mode, mic/mulut, ekspresi bingung, pause, balon pasif dan opt-in.
-PNG serta JSON hasil run ada dalam folder windows-smoke, dengan lirik contoh
-orisinal dan media uji. Hasil probe HTTPS LRCLIB dicatat terpisah tanpa teks lagu.
-Integrasi dengan pemutar dan lagu pengguna nyata tetap perlu dicoba di perangkat
-pengguna; ini versi percobaan.
+87 tes core lulus di Linux dan cross-build WPF berhasil. Penerbitan ZIP juga
+mensyaratkan semua regresi WPF pada Windows lulus, termasuk pause/resume, mic,
+bernyanyi, wajah/gestur bingung tanpa teks, notch, opt-in dan layering fullscreen.
+Laporan JSON, PNG dengan lirik uji orisinal, dan TRX ada dalam paket.
+Integrasi dengan pemutar/lagu pengguna nyata tetap perlu dicoba di perangkat pengguna.

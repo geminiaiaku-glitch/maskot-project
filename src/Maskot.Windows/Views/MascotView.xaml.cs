@@ -61,11 +61,11 @@ public partial class MascotView : UserControl
         Microphone.Visibility = performing ? Visibility.Visible : Visibility.Collapsed;
         MicLift.Angle = f.RightArm;
         var singing = performing && _performance == KaraokeMood.Singing;
+        var confused = performing && _performance == KaraokeMood.Confused;
         SingingMouth.Visibility = singing && f.MouthOpen > 0 ? Visibility.Visible : Visibility.Collapsed;
-        NormalMouth.Visibility = SingingMouth.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        NormalMouth.Visibility = SingingMouth.Visibility == Visibility.Visible || confused ? Visibility.Collapsed : Visibility.Visible;
         MouthOpening.ScaleY = Math.Max(.1, f.MouthOpen);
         MusicNote.Visibility = singing ? Visibility.Visible : Visibility.Collapsed;
-        QuestionMark.Visibility = ConfusedBrows.Visibility = performing && _performance == KaraokeMood.Confused ? Visibility.Visible : Visibility.Collapsed;
-        QuestionMark.Opacity = f.QuestionOpacity;
+        ConfusedMouth.Visibility = ConfusedBrows.Visibility = confused ? Visibility.Visible : Visibility.Collapsed;
     }
 }

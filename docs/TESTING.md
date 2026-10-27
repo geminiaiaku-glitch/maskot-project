@@ -80,3 +80,18 @@ provider-probe.json memuat pengujian HTTPS LRCLIB menggunakan metadata publik
 Jika layanan sedang unavailable, hasil itu terpisah dari tes logika/UI dan pengguna
 akan mendapat state fallback. Fixture UI tidak membuktikan seluruh pemutar/lagu
 pengguna nyata bekerja.
+
+## Perbaikan 0.3.1
+
+87 tes core lulus di cloud Linux, termasuk pause/resume untuk synced, plain,
+missing, instrumental, error dan loading. Pose karaoke mati saat lagu dijeda;
+mic saat musik diputar tidak mensyaratkan lirik online, dan opt-in tetap mencegah
+lookup jaringan. State tanpa lirik tidak menghasilkan teks/balon atau notch besar.
+Cross-build WPF berhasil dengan nol error/peringatan.
+
+Regresi Windows juga memeriksa brows/mouth bingung dan perubahan piksel gestur,
+tidak adanya teks pada karakter/balon, notch ringkas, mic hilang saat pause,
+resume singing/confused, instrumental, loading, serta playback dengan lirik online
+mati tanpa lookup. Lihat result.json dalam ZIP rilis untuk hasil native aktual;
+penerbitan digagalkan jika salah satu pemeriksaan gagal. Pemutar pengguna nyata
+tetap memerlukan pemeriksaan manual di perangkat pengguna.

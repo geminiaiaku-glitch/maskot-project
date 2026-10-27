@@ -116,20 +116,43 @@ internal static class WindowsSmoke
             Check("singing_pixels_animate", singingA != singingB);
 
             app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Missing), TimeSpan.FromSeconds(5)); await Task.Delay(120);
-            Check("missing_lyrics_make_momo_confused", mascot.Character.QuestionMark.IsVisible && mascot.Character.Microphone.IsVisible && mascot.Character.Performance == KaraokeMood.Confused);
-            Capture(mascot.Character, Path.Combine(output, "momo-confused.png"));
-            Capture((FrameworkElement)app.BubbleForDiagnostics!.Content, Path.Combine(output, "momo-confused-bubble.png"));
+            Check("missing_lyrics_make_momo_confused", mascot.Character.ConfusedBrows.IsVisible && mascot.Character.ConfusedMouth.IsVisible && mascot.Character.Microphone.IsVisible && mascot.Character.Performance == KaraokeMood.Confused);
+            Check("confusion_uses_gestures_without_text", !HasVisibleText(mascot.Character) && app.BubbleForDiagnostics?.IsVisible == false && string.IsNullOrEmpty(app.Cue.Current) && string.IsNullOrEmpty(app.Cue.Next));
+            var confusedA = Capture(mascot.Character, Path.Combine(output, "momo-confused.png"));
+            await Task.Delay(250);
+            var confusedB = Capture(mascot.Character, Path.Combine(output, "momo-confused-b.png"));
+            Check("confused_gestures_animate", confusedA != confusedB);
+            app.Controller.Press(app.Controller.Position + new PointD(40, 40));
+            app.Controller.MovePointer(new(display.Bounds.Center.X, display.Bounds.Y + 25 * display.Scale), app.Displays);
+            app.Controller.Release(app.Displays); app.Render(); await Task.Delay(220);
+            Check("missing_lyrics_leave_notch_compact_without_status_text", mascot.Notch.IsVisible && mascot.NotchLyrics.Visibility == Visibility.Collapsed && Desktop.WindowBounds(mascot).Width <= 240 && Desktop.WindowBounds(mascot).Height <= 50);
+            Capture((FrameworkElement)mascot.Content, Path.Combine(output, "notch-without-lyrics.png"));
+            app.Walk(); app.Stay(); app.Render(); await Task.Delay(220);
+            app.SetKaraokeFixture(song with { Playing = false }, LyricsDocument.Empty(LyricsAvailability.Missing), TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("pause_clears_confused_face_and_microphone", !mascot.Character.ConfusedBrows.IsVisible && !mascot.Character.ConfusedMouth.IsVisible && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            Capture(mascot.Character, Path.Combine(output, "momo-paused.png"));
+            app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Missing), TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("resume_restores_confused_face_without_speech", mascot.Character.ConfusedMouth.IsVisible && mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
             app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Error), TimeSpan.FromSeconds(5)); await Task.Delay(80);
-            Check("lyric_connection_error_is_handled", app.Cue.Mood == KaraokeMood.Confused && app.BubbleForDiagnostics!.IsVisible);
+            Check("lyric_connection_error_is_handled", mascot.Character.ConfusedMouth.IsVisible && app.Cue.Mood == KaraokeMood.Confused && app.BubbleForDiagnostics?.IsVisible == false);
+            app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Instrumental), TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("instrumental_uses_confused_face_without_speech", mascot.Character.ConfusedMouth.IsVisible && mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            app.SetKaraokeFixture(song, LyricsDocument.Empty(LyricsAvailability.Loading), TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("loading_holds_microphone_without_speech", mascot.Character.Microphone.IsVisible && !mascot.Character.ConfusedMouth.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
 
             app.SetKaraokeFixture(song with { Playing = false }, lyrics, TimeSpan.FromSeconds(5)); await Task.Delay(80);
-            Check("pause_stops_singing_and_bubble", !mascot.Character.SingingMouth.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            Check("pause_stops_singing_microphone_and_bubble", !mascot.Character.SingingMouth.IsVisible && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            app.SetKaraokeFixture(song, lyrics, TimeSpan.FromSeconds(5)); await Task.Delay(80);
+            Check("resume_restores_singing_microphone_and_lyrics", mascot.Character.SingingMouth.IsVisible && mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == true && app.BubbleForDiagnostics.CurrentLine == "Nada ringan membawa cerita");
             app.SetKaraokeFixture(null, LyricsDocument.Empty(LyricsAvailability.None), TimeSpan.Zero); await Task.Delay(80);
             Check("no_media_removes_microphone", !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
             app.State.Preferences.LyricsEnabled = false;
             lookups = app.FixtureLyricsRequests;
             app.SetKaraokeFixture(song, lyrics, TimeSpan.Zero); await Task.Delay(80);
-            Check("lyrics_opt_in_is_respected", app.FixtureLyricsRequests == lookups && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            Check("lyrics_opt_in_is_respected", app.FixtureLyricsRequests == lookups && mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
+            Capture(mascot.Character, Path.Combine(output, "momo-music-without-online-lyrics.png"));
+            app.SetKaraokeFixture(song with { Playing = false }, lyrics, TimeSpan.Zero); await Task.Delay(80);
+            Check("pause_removes_microphone_with_lyrics_disabled", app.FixtureLyricsRequests == lookups && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
 
             await ProbeLyricsProviderAsync(output);
         }
@@ -149,6 +172,13 @@ internal static class WindowsSmoke
             }, new JsonSerializerOptions { WriteIndented = true }));
             app.Quit(exit);
         }
+    }
+    private static bool HasVisibleText(DependencyObject node)
+    {
+        if (node is TextBlock text && text.IsVisible && text.Opacity > 0 && !string.IsNullOrWhiteSpace(text.Text)) return true;
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
+            if (HasVisibleText(VisualTreeHelper.GetChild(node, i))) return true;
+        return false;
     }
     private static async Task ProbeLyricsProviderAsync(string output)
     {

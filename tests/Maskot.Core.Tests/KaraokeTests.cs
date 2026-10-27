@@ -75,25 +75,48 @@ public sealed class KaraokeTests
     [Fact] public void PausingStopsSingingAndHidesSpeechButKeepsNotchLyrics()
     {
         var cue = KaraokeCue.Create(Synced, true, false, TimeSpan.FromSeconds(5), true);
-        Assert.Equal(KaraokeMood.Listening, cue.Mood); Assert.False(cue.ShowBubble); Assert.True(cue.ExpandedNotch);
+        Assert.Equal(KaraokeMood.None, cue.Mood); Assert.False(cue.ShowBubble); Assert.True(cue.ExpandedNotch);
         Assert.Equal("Nada ringan membawa cerita", cue.Current); Assert.True(cue.Paused);
     }
     [Theory] [InlineData(LyricsAvailability.Missing)] [InlineData(LyricsAvailability.Instrumental)] [InlineData(LyricsAvailability.Error)]
     public void UnavailableLyricsMakeMomoConfused(LyricsAvailability state)
     {
         var cue = KaraokeCue.Create(LyricsDocument.Empty(state), true, true, TimeSpan.Zero, true);
-        Assert.Equal(KaraokeMood.Confused, cue.Mood); Assert.True(cue.ShowBubble);
+        Assert.Equal(KaraokeMood.Confused, cue.Mood); Assert.False(cue.ShowBubble); Assert.False(cue.ExpandedNotch);
+        Assert.Empty(cue.Current); Assert.Empty(cue.Next);
     }
     [Fact] public void LoadingUsesPatientPoseInsteadOfClaimingMissingLyrics()
     {
         var cue = KaraokeCue.Create(LyricsDocument.Empty(LyricsAvailability.Loading), true, true, TimeSpan.Zero, true);
-        Assert.Equal(KaraokeMood.Listening, cue.Mood); Assert.Equal("Mencari lirik…", cue.Current);
+        Assert.Equal(KaraokeMood.Listening, cue.Mood); Assert.Empty(cue.Current); Assert.False(cue.ShowBubble);
+        Assert.False(cue.ExpandedNotch);
     }
-    [Theory] [InlineData(false, true)] [InlineData(true, false)]
-    public void DisabledOrNoSongHasNoMicrophoneOrBubble(bool hasSong, bool enabled)
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void NoSongHasNoMicrophoneOrBubble(bool enabled)
     {
-        var cue = KaraokeCue.Create(Synced, hasSong, true, TimeSpan.Zero, enabled);
+        var cue = KaraokeCue.Create(Synced, false, true, TimeSpan.Zero, enabled);
         Assert.Equal(KaraokeMood.None, cue.Mood); Assert.False(cue.ShowBubble); Assert.False(cue.ExpandedNotch);
+    }
+    [Theory] [InlineData(false)] [InlineData(true)]
+    public void MicrophoneFollowsPlaybackEvenWhenOnlineLyricsAreOff(bool playing)
+    {
+        var cue = KaraokeCue.Create(LyricsDocument.Empty(LyricsAvailability.Disabled), true, playing, TimeSpan.Zero, false);
+        Assert.Equal(playing ? KaraokeMood.Listening : KaraokeMood.None, cue.Mood);
+        Assert.False(cue.ShowBubble); Assert.False(cue.ExpandedNotch); Assert.Empty(cue.Current);
+    }
+    [Theory]
+    [InlineData(LyricsAvailability.Synced)] [InlineData(LyricsAvailability.Plain)]
+    [InlineData(LyricsAvailability.Missing)] [InlineData(LyricsAvailability.Instrumental)]
+    [InlineData(LyricsAvailability.Error)] [InlineData(LyricsAvailability.Loading)]
+    public void PauseAndResumeRestoreTheAppropriatePose(LyricsAvailability state)
+    {
+        var doc = state == LyricsAvailability.Synced ? Synced : state == LyricsAvailability.Plain
+            ? LyricsDocument.FromText(null, "Lirik uji Momo") : LyricsDocument.Empty(state);
+        var playing = KaraokeCue.Create(doc, true, true, TimeSpan.FromSeconds(5), true);
+        var paused = KaraokeCue.Create(doc, true, false, TimeSpan.FromSeconds(5), true);
+        var resumed = KaraokeCue.Create(doc, true, true, TimeSpan.FromSeconds(5), true);
+        Assert.Equal(KaraokeMood.None, paused.Mood); Assert.True(paused.Paused); Assert.False(paused.ShowBubble);
+        Assert.Equal(playing, resumed); Assert.NotEqual(KaraokeMood.None, resumed.Mood);
     }
     [Fact] public void PlainLyricsAreMarkedUntimedAndNeverInventLineTimings()
     {
@@ -109,10 +132,12 @@ public sealed class KaraokeTests
         Assert.True(a.MouthOpen > 0); Assert.NotEqual(a.MouthOpen, b.MouthOpen);
         Assert.True(a.RightArm < 0); Assert.True(a.LeftFoot > 20); Assert.True(a.RightFoot < -20);
     }
-    [Fact] public void ConfusedPoseLooksAtMicrophoneWithQuestionMark()
+    [Fact] public void ConfusedPoseTiltsHeadAndShrugsWhileInspectingMicrophone()
     {
         var f = MascotAnimation.Sample(MascotPose.Idle, .3, true, KaraokeMood.Confused);
-        Assert.True(f.QuestionOpacity > .5); Assert.True(f.HeadAngle > 8); Assert.Equal(0, f.MouthOpen);
+        var later = MascotAnimation.Sample(MascotPose.Idle, .8, true, KaraokeMood.Confused);
+        Assert.True(f.HeadAngle > 8); Assert.True(f.LeftArm < 0); Assert.Equal(0, f.MouthOpen);
+        Assert.NotEqual(f.HeadAngle, later.HeadAngle); Assert.NotEqual(f.RightArm, later.RightArm);
     }
     [Fact] public void DraggingHasPriorityOverKaraokePose()
     {
