@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <!-- Momo: original temporary vector art, drawn for this project. 112 × 142. -->
+ <DrawingImage x:Key="MomoArt">
+  <DrawingImage.Drawing><DrawingGroup>
+   <GeometryDrawing Brush="#422F24" Geometry="M88,92 C119,77 115,121 88,117 L85,108 C108,109 108,93 90,102 Z" />
+   <GeometryDrawing Brush="#C1D691" Geometry="M26,90 Q9,86 13,105 Q18,119 30,114 Z" />
+   <GeometryDrawing Brush="#C1D691" Geometry="M84,90 Q101,86 99,105 Q94,119 83,114 Z" />
+   <GeometryDrawing Brush="#46372D" Geometry="M31,119 Q19,139 39,138 Q49,138 48,120 Z" />
+   <GeometryDrawing Brush="#46372D" Geometry="M65,120 Q64,139 80,138 Q96,138 82,119 Z" />
+   <GeometryDrawing Brush="#DBEAAE" Geometry="M28,82 Q9,130 55,130 Q99,132 84,82 Z">
+    <GeometryDrawing.Pen><Pen Brush="#493B30" Thickness="2.4" /></GeometryDrawing.Pen>
+   </GeometryDrawing>
+   <GeometryDrawing Brush="#A0B574" Geometry="M33,94 Q56,107 80,94 L76,105 Q56,118 36,105 Z" />
+   <GeometryDrawing Brush="#F7EAD0" Geometry="M22,37 L17,9 Q17,1 25,6 L44,21 L70,21 L91,5 Q97,1 97,13 L91,42 Q106,83 80,94 Q58,108 30,94 Q8,83 16,56 Z">
+    <GeometryDrawing.Pen><Pen Brush="#493B30" Thickness="2.5" LineJoin="Round" /></GeometryDrawing.Pen>
+   </GeometryDrawing>
+   <GeometryDrawing Brush="#E9AE9C" Geometry="M23,16 L25,34 L37,27 Z M89,17 L87,34 L77,27 Z" />
+   <GeometryDrawing Brush="#E7D5B3" Geometry="M23,44 Q28,27 43,30 Q51,34 47,43 Q36,46 23,44" />
+   <GeometryDrawing Brush="#493B30" Geometry="M34,59 A3.4,4.5 0 1 0 40.8,59 A3.4,4.5 0 1 0 34,59 M72,59 A3.4,4.5 0 1 0 78.8,59 A3.4,4.5 0 1 0 72,59" />
+   <GeometryDrawing Brush="#EFB5A5" Geometry="M23,71 A8,4 0 1 0 39,71 A8,4 0 1 0 23,71 M74,71 A8,4 0 1 0 90,71 A8,4 0 1 0 74,71" />
+   <GeometryDrawing Brush="#735445" Geometry="M52,66 Q56,63 60,66 L56,70 Z" />
+   <GeometryDrawing Geometry="M47,73 Q51,78 56,72 Q61,78 65,73"><GeometryDrawing.Pen><Pen Brush="#735445" Thickness="1.7" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen></GeometryDrawing>
+   <GeometryDrawing Brush="#EAC46B" Geometry="M49,98 L62,98 L63,113 Q56,119 49,113 Z">
+    <GeometryDrawing.Pen><Pen Brush="#756238" Thickness="1.2" /></GeometryDrawing.Pen>
+   </GeometryDrawing>
+   <GeometryDrawing Brush="#70552F" Geometry="M51,102 L61,102 L61,105 L51,105 Z M51,108 L61,108 L61,111 L51,111 Z" />
+   <GeometryDrawing Brush="#FAF4DE" Geometry="M56,98 C41,84 42,102 56,103 C69,87 73,100 56,103" />
+  </DrawingGroup></DrawingImage.Drawing>
+ </DrawingImage>
+</ResourceDictionary>

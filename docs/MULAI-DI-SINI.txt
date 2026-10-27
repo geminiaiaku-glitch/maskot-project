@@ -1,0 +1,31 @@
+MASKOT / MOMO — VERSI PERCOBAAN 0.1
+
+Untuk Windows 11 64-bit.
+
+1. Klik kanan file ZIP yang sudah diunduh, lalu pilih "Extract All" / "Ekstrak Semua".
+2. Buka folder hasil ekstraksi.
+3. Klik dua kali Maskot.exe. Jangan menjalankannya dari dalam tampilan ZIP.
+
+Tidak perlu memasang .NET atau alat coding. Simpan folder hasil ekstraksi di
+tempat tetap agar pengaturan jalankan saat login tetap menunjuk ke file yang benar.
+
+Cara menggunakan:
+- Klik tubuh Momo: buka atau tutup panel fitur.
+- Klik kanan Momo: Jalan-jalan, Diam di sini, Pengaturan, dan Keluar.
+- Seret ke tengah atas layar, lalu lepas pada penanda: menjadi notch.
+- Tarik badan notch ke bawah: kembali menjadi maskot.
+- Escape saat menyeret: batalkan perpindahan.
+- Jatuhkan file ke tubuh Momo atau notch: simpan pintasan di file shelf.
+- Untuk menutup sepenuhnya, pilih Keluar melalui menu atau ikon tray.
+
+Ini build percobaan yang belum ditandatangani. Kompilasi dan tes logika telah
+dijalankan. Perilaku visual, taskbar, klik transparan, dan media Windows masih
+memerlukan pengujian langsung. Jangan menganggap semua fitur sudah teruji.
+
+Jika muncul kesalahan, kirim tangkapan layar atau salin pesan kesalahannya ke chat.
+Jika Windows memblokir aplikasi, kirim pesan yang muncul agar dapat diperiksa.
+
+Data catatan/tugas/pengaturan: %LOCALAPPDATA%\Maskot\state.json
+Log kesalahan aplikasi: %LOCALAPPDATA%\Maskot\errors.log
+
+Baca TESTING.md dan WINDOWS-ACCEPTANCE.md untuk rincian status pengujian.

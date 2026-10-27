@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Maskot.Core/Maskot.Core.csproj" />
+    <Project Path="src/Maskot.Windows/Maskot.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Maskot.Core.Tests/Maskot.Core.Tests.csproj" />
+  </Folder>
+</Solution>
