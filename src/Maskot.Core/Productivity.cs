@@ -51,10 +51,12 @@ public sealed class ShelfItem
 
 public sealed class Preferences
 {
+    // Zero identifies settings written before the animated/always-visible release.
+    public int BehaviorVersion { get; set; }
     public double Size { get; set; } = 1;
     public double WalkSpeed { get; set; } = 32;
     public bool ExtraAnimations { get; set; } = true;
-    public bool HideInFullscreen { get; set; } = true;
+    public bool HideInFullscreen { get; set; }
     public bool LyricsEnabled { get; set; }
     public bool StartAtLogin { get; set; }
 }
@@ -72,6 +74,12 @@ public sealed class AppState
     public void Normalize()
     {
         Preferences ??= new(); Timer ??= new(); Tasks ??= []; Shelf ??= []; Notes ??= "";
+        if (Preferences.BehaviorVersion < 2)
+        {
+            Preferences.HideInFullscreen = false;
+            Preferences.ExtraAnimations = true;
+            Preferences.BehaviorVersion = 2;
+        }
         Preferences.Size = double.IsFinite(Preferences.Size) ? Math.Clamp(Preferences.Size, 0.65, 1.8) : 1;
         Preferences.WalkSpeed = double.IsFinite(Preferences.WalkSpeed) ? Math.Clamp(Preferences.WalkSpeed, 10, 100) : 32;
         Timer.FocusMinutes = Math.Clamp(Timer.FocusMinutes, 1, 180);

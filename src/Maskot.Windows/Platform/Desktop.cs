@@ -31,7 +31,8 @@ internal static class Desktop
     [DllImport("user32.dll")] private static extern bool UnregisterHotKey(IntPtr hwnd, int id);
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] private static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] private static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
-    [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr hwnd, uint command);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out int value, int size);
     [DllImport("user32.dll")] internal static extern bool DestroyIcon(IntPtr icon);
 
@@ -100,8 +101,37 @@ internal static class Desktop
     {
         var h = new WindowInteropHelper(w).Handle;
         if (h == IntPtr.Zero) return;
-        var flags = 0x10u | (width is null ? 0x1u : 0); // NOACTIVATE, optionally NOSIZE
-        SetWindowPos(h, new(-1), (int)Math.Round(p.X), (int)Math.Round(p.Y),
-            (int)Math.Ceiling(width ?? 0), (int)Math.Ceiling(height ?? 0), flags);
+        var x = (int)Math.Round(p.X); var y = (int)Math.Round(p.Y);
+        var cx = (int)Math.Ceiling(width ?? 0); var cy = (int)Math.Ceiling(height ?? 0);
+        var flags = 0x10u | (width is null ? 0x1u : 0);
+        if (GetWindowRect(h, out var old))
+        {
+            var samePosition = old.Left == x && old.Top == y;
+            var sameSize = width is null || old.Right - old.Left == cx && old.Bottom - old.Top == cy;
+            if (samePosition && sameSize) return;
+            if (samePosition) flags |= 0x2;
+            if (sameSize) flags |= 0x1;
+        }
+        if (!SetWindowPos(h, new(-1), x, y, cx, cy, flags))
+            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Windows tidak dapat memindahkan Momo.");
+    }
+    public static RectD WindowBounds(Window window)
+    {
+        GetWindowRect(new WindowInteropHelper(window).Handle, out var r);
+        return new(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+    }
+    public static void KeepAbove(Window window)
+    {
+        var handle = new WindowInteropHelper(window).Handle;
+        if (handle != IntPtr.Zero && window.IsVisible)
+            SetWindowPos(handle, new(-1), 0, 0, 0, 0, 0x13); // NOMOVE | NOSIZE | NOACTIVATE
+    }
+    public static bool IsAbove(Window window, Window other)
+    {
+        var target = new WindowInteropHelper(window).Handle;
+        var h = new WindowInteropHelper(other).Handle;
+        for (var i = 0; i < 1000 && h != IntPtr.Zero; i++)
+        { h = GetWindow(h, 3); if (h == target) return true; }
+        return false;
     }
 }

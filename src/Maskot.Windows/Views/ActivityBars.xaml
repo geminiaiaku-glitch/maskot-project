@@ -1,0 +1,9 @@
+<UserControl x:Class="Maskot.Windows.Views.ActivityBars"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <StackPanel Orientation="Horizontal" Height="18" VerticalAlignment="Center" HorizontalAlignment="Center">
+  <Rectangle x:Name="A" Width="2.4" Height="4" Fill="#F5F5F7" RadiusX="1.2" RadiusY="1.2" Margin="1.3,0" VerticalAlignment="Center" />
+  <Rectangle x:Name="B" Width="2.4" Height="8" Fill="#F5F5F7" RadiusX="1.2" RadiusY="1.2" Margin="1.3,0" VerticalAlignment="Center" />
+  <Rectangle x:Name="C" Width="2.4" Height="5" Fill="#F5F5F7" RadiusX="1.2" RadiusY="1.2" Margin="1.3,0" VerticalAlignment="Center" />
+  <Rectangle x:Name="D" Width="2.4" Height="11" Fill="#F5F5F7" RadiusX="1.2" RadiusY="1.2" Margin="1.3,0" VerticalAlignment="Center" />
+ </StackPanel>
+</UserControl>

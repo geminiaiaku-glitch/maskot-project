@@ -4,6 +4,9 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Maskot.Windows.Platform;
 using Maskot.Windows.Views;
+using Maskot.Windows.Diagnostics;
+using System.Windows.Interop;
+using System.Windows.Media;
 using Forms = System.Windows.Forms;
 using Drawing = System.Drawing;
 
@@ -18,6 +21,10 @@ public partial class App : Application
     internal LyricsService Lyrics { get; } = new();
     internal bool Exiting { get; private set; }
     internal bool PanelVisible => _panel?.IsVisible == true;
+    internal MascotWindow MascotForDiagnostics => _mascot!;
+    internal PanelWindow? PanelForDiagnostics => _panel;
+    internal bool SmokeMode { get; private set; }
+    private string? _smokeOutput;
     private MascotWindow? _mascot;
     private PanelWindow? _panel;
     private DockHintWindow? _hint;
@@ -35,34 +42,48 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        _instance = new Mutex(true, @"Local\Maskot.Desktop.Momo", out var created);
+        SmokeMode = e.Args.Contains("--self-test");
+        if (SmokeMode)
+        {
+            var outputIndex = Array.IndexOf(e.Args, "--self-test-output");
+            _smokeOutput = outputIndex >= 0 && outputIndex + 1 < e.Args.Length ? e.Args[outputIndex + 1] : Path.Combine(Path.GetTempPath(), "maskot-smoke-output");
+            Directory.CreateDirectory(_smokeOutput);
+        }
+        if (SmokeMode) RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+        _instance = new Mutex(true, SmokeMode ? @"Local\Maskot.Desktop.Smoke." + Guid.NewGuid() : @"Local\Maskot.Desktop.Momo", out var created);
         if (!created) { MessageBox.Show("Maskot sudah berjalan. Gunakan ikon Momo di system tray.", "Maskot"); Shutdown(); return; }
         DispatcherUnhandledException += Unhandled;
-        _store = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Maskot"));
+        _store = new(SmokeMode ? Path.Combine(Path.GetTempPath(), "maskot-smoke-" + Guid.NewGuid())
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Maskot"));
         State = _store.Load(); State.Normalize();
         Displays = Desktop.Displays();
         ApplyPreferences(); Controller.Restore(State.Placement, Displays);
         _mascot = new(); MainWindow = _mascot; _hint = new();
         _mascot.Show(); CreateTray(); Render();
         Media.Changed += MediaChanged;
-        _ = Media.InitializeAsync();
+        if (!SmokeMode) _ = Media.InitializeAsync();
         _clock.Start();
         _tick = new(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(40) };
         _tick.Tick += Tick; _tick.Start();
         if (_store.RecoveryNotice is { } notice) Notify(notice);
+        if (SmokeMode)
+        {
+            Dispatcher.BeginInvoke(async () => await WindowsSmoke.RunAsync(this, _smokeOutput!), DispatcherPriority.ApplicationIdle);
+        }
     }
 
     private void Unhandled(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         try
         {
-            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Maskot");
+            var dir = _store is null ? Path.Combine(Path.GetTempPath(), "Maskot") : Path.GetDirectoryName(_store.FilePath)!;
             Directory.CreateDirectory(dir);
             File.AppendAllText(Path.Combine(dir, "errors.log"), DateTimeOffset.Now + "\n" + e.Exception + "\n");
+            if (SmokeMode && _smokeOutput is not null) File.WriteAllText(Path.Combine(_smokeOutput, "failure.txt"), e.Exception.ToString());
         }
         catch { }
-        MessageBox.Show("Maskot mengalami kesalahan. Detail tersimpan di %LOCALAPPDATA%\\Maskot\\errors.log. Aplikasi akan ditutup agar tidak berjalan dalam keadaan rusak.", "Maskot");
-        e.Handled = true; Quit();
+        if (!SmokeMode) MessageBox.Show("Maskot mengalami kesalahan. Detail tersimpan di %LOCALAPPDATA%\\Maskot\\errors.log. Aplikasi akan ditutup agar tidak berjalan dalam keadaan rusak.", "Maskot");
+        e.Handled = true; Quit(1);
     }
 
     private void MediaChanged()
@@ -84,12 +105,13 @@ public partial class App : Application
             var display = CurrentDisplay();
             var hidden = State.Preferences.HideInFullscreen && now >= _forceVisibleUntil && Desktop.FullscreenOn(display) && !PanelVisible && !Controller.PointerHeld;
             if (hidden) _mascot?.Hide(); else if (_mascot?.IsVisible == false) _mascot.Show();
+            if (!hidden && !Controller.PanelOpen && _mascot is not null) Desktop.KeepAbove(_mascot);
             if (State.Timer.Advance(now)) { SaveNow(); Notify(State.Timer.Phase == FocusPhase.Break ? "Sesi fokus selesai. Saatnya beristirahat. Buka panel untuk memulai istirahat." : "Istirahat selesai. Mulai sesi fokus saat kamu siap."); }
             _panel?.Tick(); _mascot?.UpdateAppearance();
         }
         if (_mascot?.IsVisible == true)
         {
-            Controller.Tick(delta, Desktop.Cursor, Displays); Render();
+            Controller.Tick(delta, SmokeMode ? new(-99999, -99999) : Desktop.Cursor, Displays); Render();
         }
         if (_saveAt is { } due && now >= due || elapsed - _lastSave >= 15) SaveNow();
         var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : 200;
@@ -119,13 +141,15 @@ public partial class App : Application
         if (_panel is null) return;
         var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
         // Fit the actual physical workspace, including small displays and mixed DPI.
-        var scale = Math.Min(d.Scale, Math.Min(d.WorkArea.Width / 424, d.WorkArea.Height / 622));
+        var height = _panel.PreferredHeight;
+        var scale = Math.Min(d.Scale, Math.Min(d.WorkArea.Width / 452, d.WorkArea.Height / (height + 12)));
         scale = Math.Max(.5, scale);
-        var pw = 412 * scale; var ph = 610 * scale;
+        var pw = 440 * scale; var ph = height * scale;
         var p = DesktopGeometry.PlacePanel(new(Controller.Position.X, Controller.Position.Y, w, h), d.WorkArea, pw, ph, 10 * scale);
         Desktop.Position(_panel, p, pw, ph);
     }
     internal void TogglePanel() { if (PanelVisible) ClosePanel(); else OpenPanel(); }
+    internal void RelayoutPanel() { if (PanelVisible) PositionPanel(); }
     internal void AddFiles(IEnumerable<string> paths) { OpenPanel(); _panel?.AddFiles(paths); }
     internal void OpenPanel(bool settings = false)
     {
@@ -188,7 +212,8 @@ public partial class App : Application
         _panel?.Notice(text);
         if (_tray is not null) { _tray.BalloonTipTitle = "Maskot"; _tray.BalloonTipText = text; _tray.ShowBalloonTip(5000); }
     }
-    internal void Quit()
+    internal void Quit() => Quit(0);
+    internal void Quit(int exitCode)
     {
         if (Exiting) return;
         Exiting = true; _tick?.Stop(); Controller.CancelDrag();
@@ -196,7 +221,7 @@ public partial class App : Application
         if (_tray is not null) { _tray.Visible = false; _tray.Dispose(); }
         _icon?.Dispose();
         _panel?.Close(); _hint?.Close(); _mascot?.Close();
-        _instance?.Dispose(); Shutdown();
+        _instance?.Dispose(); Shutdown(exitCode);
     }
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e) { SaveNow(); base.OnSessionEnding(e); }
 }

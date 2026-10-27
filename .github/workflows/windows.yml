@@ -32,6 +32,19 @@ jobs:
             Write-Host "::error title=Windows build details::$message"
           }
           exit $buildExitCode
+      - name: Windows WPF animation and fullscreen checks
+        run: |
+          try { ./scripts/test-windows-ui.ps1 } catch {
+            $detail = ($_ | Out-String).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Windows UI checks::$detail"
+            throw
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-smoke
+          path: artifacts/windows-smoke/
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
           name: Maskot-win-x64
@@ -59,6 +72,10 @@ jobs:
         with:
           name: test-results
           path: artifacts/win-x64/test-results/
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-smoke
+          path: artifacts/win-x64/windows-smoke/
       - name: Package portable application
         run: |
           cd artifacts/win-x64

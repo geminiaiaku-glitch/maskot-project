@@ -32,6 +32,26 @@ public partial class PanelWindow : Window
     }
     internal void OpenSettings() => Tabs.SelectedIndex = 3;
     internal void RefreshContent() => RefreshLists();
+    internal double PreferredHeight => Tabs.SelectedIndex switch
+    {
+        0 => 368 + (LyricsPane.Visibility == Visibility.Visible ? 130 : 0) + (SourcePicker.Visibility == Visibility.Visible ? 38 : 0),
+        1 => 440, 2 => 560, _ => 580
+    };
+    internal void SelectTab(int index) => Tabs.SelectedIndex = index;
+    private void TabChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_initializing && ReferenceEquals(e.Source, Tabs)) Host.RelayoutPanel();
+    }
+    private void ToggleLyricsPanel(object sender, RoutedEventArgs e)
+    {
+        LyricsPane.Visibility = LyricsPane.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        Host.RelayoutPanel();
+    }
+    private void ToggleSources(object sender, RoutedEventArgs e)
+    {
+        SourcePicker.Visibility = SourcePicker.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        Host.RelayoutPanel();
+    }
     private void CloseClicked(object sender, RoutedEventArgs e) => Host.ClosePanel();
     private void PanelKeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Escape) { Host.ClosePanel(); e.Handled = true; } }
     private void PanelDeactivated(object? sender, EventArgs e) { if (!_nativeDialog) Host.ClosePanel(); }
@@ -47,9 +67,9 @@ public partial class PanelWindow : Window
             if (!Sources.Items.Cast<string>().SequenceEqual(sources)) Sources.ItemsSource = sources;
             Sources.SelectedItem = media?.Source;
             TrackTitle.Text = media?.Title is { Length: > 0 } t ? t : "Belum ada musik";
-            TrackArtist.Text = media?.Artist is { Length: > 0 } a ? a : "Beri harimu sedikit irama.";
+            TrackArtist.Text = media?.Artist is { Length: > 0 } a ? a : "Putar lagu favoritmu.";
             Cover.Source = media?.Cover;
-            PlayPause.Content = media?.Playing == true ? "Ⅱ" : "▶";
+            PlayGlyph.Data = Geometry.Parse(media?.Playing == true ? "M0,0 L4,0 L4,14 L0,14 Z M8,0 L12,0 L12,14 L8,14 Z" : "M1,0 L12,7 L1,14 Z");
             PlayPause.IsEnabled = media?.CanPlayPause == true;
             Previous.IsEnabled = media?.CanPrevious == true; Next.IsEnabled = media?.CanNext == true;
             Seek.IsEnabled = media?.CanSeek == true;
@@ -78,6 +98,13 @@ public partial class PanelWindow : Window
     internal void Tick()
     {
         if (!IsVisible) return;
+        PanelClock.Text = DateTime.Now.ToString("HH:mm");
+        PanelBars.IsActive = Host.Media.Current?.Playing == true && Host.State.Preferences.ExtraAnimations;
+        ModeStatus.Text = Host.Controller.Mode switch
+        {
+            MascotMode.Walking => "● Berjalan", MascotMode.Stationary => "● Diam di sini", _ => "● Notch"
+        } + (Host.State.Preferences.HideInFullscreen ? " · sembunyi saat fullscreen" : " · selalu di atas");
+        ModeAction.Content = Host.Controller.Mode == MascotMode.Walking ? "Diam" : "Jalan-jalan";
         if (!_seeking) Seek.Value = Host.Media.Position.TotalSeconds;
         Elapsed.Text = Format(Host.Media.Position);
         var timer = Host.State.Timer;
@@ -217,8 +244,13 @@ public partial class PanelWindow : Window
         if (_initializing) return;
         Host.State.Preferences.LyricsEnabled = OnlineLyrics.IsChecked == true; _lyricsKey = null; RefreshLyrics(); Host.SaveSoon();
     }
-    private void WalkClicked(object sender, RoutedEventArgs e) => Host.Walk();
+    private void WalkClicked(object sender, RoutedEventArgs e) { Host.Walk(); Host.ClosePanel(); }
+    private void ModeActionClicked(object sender, RoutedEventArgs e)
+    {
+        if (Host.Controller.Mode == MascotMode.Walking) Host.Stay(); else Host.Walk();
+        Host.ClosePanel();
+    }
     private void StayClicked(object sender, RoutedEventArgs e) => Host.Stay();
     private void QuitClicked(object sender, RoutedEventArgs e) => Host.Quit();
-    internal void Notice(string message) => Status.Text = message;
+    internal void Notice(string message) { Status.Text = message; Status.ToolTip = message; }
 }

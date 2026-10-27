@@ -44,6 +44,8 @@ public sealed class MascotController
         Position = Mode == MascotMode.Notch ? DockPosition(d) :
             d.WorkArea.Clamp(placement?.Position ?? new(d.Bounds.Center.X - w / 2, d.WalkingBottom - h), w, h);
         if (Mode == MascotMode.Walking) Position = new(Position.X, d.WalkingBottom - h);
+        Pose = Mode == MascotMode.Walking ? MascotPose.Walk : MascotPose.Idle;
+        _moodSeconds = 8;
     }
 
     private PointD DockPosition(DisplayArea d) => new(d.Bounds.Center.X - 115 * d.Scale, d.Bounds.Y);
@@ -59,9 +61,10 @@ public sealed class MascotController
 
     public void SetPanel(bool open)
     {
+        if (PanelOpen == open) return;
         PanelOpen = open;
-        if (!open) { _resumeDelay = 0.8; _moodSeconds = 0; }
-        Pose = MascotPose.Idle;
+        if (!open) { _resumeDelay = 0.6; _moodSeconds = 8; }
+        Pose = !open && Mode == MascotMode.Walking ? MascotPose.Walk : MascotPose.Idle;
     }
 
     public void Walk(DisplayArea d)
@@ -70,7 +73,8 @@ public sealed class MascotController
         MonitorId = d.Id;
         var (w, h) = Dimensions(d.Scale);
         Position = d.WorkArea.Clamp(new(Position.X, d.WalkingBottom - h), w, h);
-        _moodSeconds = 0;
+        _moodSeconds = 8;
+        _resumeDelay = 0;
         Pose = MascotPose.Walk;
     }
 

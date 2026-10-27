@@ -34,3 +34,12 @@ atau perubahan pengaturan taskbar. Login startup nonaktif secara default.
 Pengujian Windows langsung adalah syarat untuk menyatakan perilaku taskbar,
 click-through transparan, media, drag-and-drop, fokus, DPI dan animasi bekerja.
 Cross-build dan tes core tidak menggantikan pengujian tersebut.
+
+## Pembaruan 0.2
+
+Gerakan berjalan berfungsi pada laporan pengguna, tetapi animasi versi pertama
+tidak terlihat. Pisahkan animasi tubuh dari gerakan jendela: langkah kaki, ekor,
+napas, kedip dan sapaan tetap aktif saat maskot diam. Maskot harus tetap di lapisan
+teratas saat aplikasi lain fullscreen; sembunyikan saat fullscreen menjadi opt-in,
+dan nilai default lama dimigrasikan. Panel mengikuti arah visual Nusa tanpa memakai
+kode/aset aplikasinya. Tambahkan tes WPF nyata pada Windows sebelum paket diterbitkan.

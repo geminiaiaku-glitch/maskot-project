@@ -1,35 +1,54 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace Maskot.Windows.Views;
 
 public partial class MascotView : UserControl
 {
-    private MascotPose? _pose;
-    private bool _extra;
-    public MascotView() => InitializeComponent();
+    private readonly Stopwatch _clock = new();
+    private readonly DispatcherTimer _frames;
+    private MascotPose _pose;
+    private bool _extra = true;
+    internal MascotFrame CurrentFrame { get; private set; }
+    internal long FramesRendered { get; private set; }
+
+    public MascotView()
+    {
+        InitializeComponent();
+        _frames = new(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(50) };
+        _frames.Tick += (_, _) => DrawFrame();
+        Loaded += (_, _) => UpdateClock();
+        Unloaded += (_, _) => { _frames.Stop(); _clock.Stop(); };
+        IsVisibleChanged += (_, _) => UpdateClock();
+    }
     public void SetPose(MascotPose pose, bool facingRight, bool extra)
     {
         Flip.ScaleX = facingRight ? 1 : -1;
         if (_pose == pose && _extra == extra) return;
         _pose = pose; _extra = extra;
-        Bob.BeginAnimation(TranslateTransform.YProperty, null);
-        Tilt.BeginAnimation(RotateTransform.AngleProperty, null);
-        Bob.Y = 0; Tilt.Angle = 0;
-        SleepEyes.Visibility = SleepMark.Visibility = pose == MascotPose.Sleep ? Visibility.Visible : Visibility.Collapsed;
-        Greeting.Visibility = pose == MascotPose.Greet ? Visibility.Visible : Visibility.Collapsed;
-        if (pose == MascotPose.Sit) Bob.Y = 7;
-        if (!extra) return;
-        var movement = new DoubleAnimation(pose == MascotPose.Walk ? -3 : pose == MascotPose.Lifted ? -5 : -1,
-            new Duration(TimeSpan.FromSeconds(pose == MascotPose.Walk ? .3 : 1.8))) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever };
-        Timeline.SetDesiredFrameRate(movement, 20);
-        Bob.BeginAnimation(TranslateTransform.YProperty, movement);
-        if (pose is MascotPose.Walk or MascotPose.Lifted)
+        DrawFrame(); UpdateClock();
+    }
+    private void UpdateClock()
+    {
+        if (_frames is null) return;
+        if (IsLoaded && IsVisible && _extra)
         {
-            var tilt = new DoubleAnimation(-3, 3, TimeSpan.FromSeconds(.35)) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever };
-            Timeline.SetDesiredFrameRate(tilt, 20); Tilt.BeginAnimation(RotateTransform.AngleProperty, tilt);
+            _frames.Interval = TimeSpan.FromMilliseconds(_pose is MascotPose.Walk or MascotPose.Lifted ? 40 : 50);
+            _clock.Start(); _frames.Start(); DrawFrame();
         }
+        else { _frames.Stop(); _clock.Stop(); if (!_extra) DrawFrame(); }
+    }
+    private void DrawFrame()
+    {
+        var f = MascotAnimation.Sample(_pose, _clock.Elapsed.TotalSeconds, _extra);
+        CurrentFrame = f; FramesRendered++;
+        Bob.Y = f.Bob; Lean.Angle = f.Lean; Head.Angle = f.HeadAngle;
+        LeftFoot.Angle = f.LeftFoot; RightFoot.Angle = f.RightFoot;
+        LeftArm.Angle = f.LeftArm; RightArm.Angle = f.RightArm;
+        Tail.Angle = f.TailAngle; Eyes.ScaleY = f.EyeScale; Breath.ScaleY = f.Breathe;
+        SleepMark.Opacity = f.SleepOpacity;
+        Greeting.Visibility = _pose == MascotPose.Greet ? Visibility.Visible : Visibility.Collapsed;
     }
 }

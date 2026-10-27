@@ -1,6 +1,13 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
- <!-- Momo: original temporary vector art, drawn for this project. 112 × 142. -->
+ <!-- Original articulated parts; independent from animation and window logic. -->
+ <PathGeometry x:Key="MomoTail" Figures="M86,96 C111,78 113,119 87,118 L85,108 C104,110 105,95 89,104 Z" />
+ <PathGeometry x:Key="MomoLeftFoot" Figures="M31,116 Q19,139 38,138 Q49,137 47,118 Z" />
+ <PathGeometry x:Key="MomoRightFoot" Figures="M65,118 Q64,138 80,138 Q96,138 82,116 Z" />
+ <PathGeometry x:Key="MomoLeftArm" Figures="M28,90 Q8,87 13,105 Q18,119 30,113 Z" />
+ <PathGeometry x:Key="MomoRightArm" Figures="M84,90 Q104,87 99,105 Q94,119 82,113 Z" />
+ <PathGeometry x:Key="MomoShirt" Figures="M28,82 Q9,130 55,130 Q99,132 84,82 Z" />
+ <PathGeometry x:Key="MomoHead" Figures="M22,37 L17,9 Q17,1 25,6 L44,21 L70,21 L91,5 Q97,1 97,13 L91,42 Q106,83 80,94 Q58,108 30,94 Q8,83 16,56 Z" />
  <DrawingImage x:Key="MomoArt">
   <DrawingImage.Drawing><DrawingGroup>
    <GeometryDrawing Brush="#422F24" Geometry="M88,92 C119,77 115,121 88,117 L85,108 C108,109 108,93 90,102 Z" />

@@ -103,8 +103,10 @@ public partial class MascotWindow : Window
         var timer = Host.State.Timer;
         var remaining = TimeSpan.FromSeconds(timer.Remaining(DateTimeOffset.UtcNow));
         var text = $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
-        SmallTimer.Text = text; NotchTimer.Text = timer.Running ? text : "";
+        SmallTimer.Text = text; NotchTimer.Text = timer.Running ? text : DateTime.Now.ToString("HH:mm");
+        NotchBars.IsActive = Host.Media.Current?.Playing == true && Host.State.Preferences.ExtraAnimations;
         TimerPill.Visibility = timer.Running && !notch ? Visibility.Visible : Visibility.Collapsed;
-        NotchLabel.Text = Host.Media.Current is { } m ? m.Title : timer.Running ? "Waktunya fokus" : "Momo menemanimu";
+        NotchLabel.Text = Host.Media.Current is { } m ? m.Title : timer.Running ? "Waktunya fokus" : "Momo";
+        ToolTip = c.Mode == MascotMode.Stationary ? "Diam di sini · klik kanan → Jalan-jalan untuk berjalan lagi" : "Klik untuk membuka panel · seret ke tengah atas untuk notch";
     }
 }

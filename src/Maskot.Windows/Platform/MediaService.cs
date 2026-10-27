@@ -19,7 +19,7 @@ internal sealed class MediaService : IDisposable
     private bool _initializing;
     private bool _disposed;
     public MediaView? Current { get; private set; }
-    public string Status { get; private set; } = "Menghubungkan media Windows…";
+    public string Status { get; private set; } = "Putar lagu di Spotify, browser, atau pemutar favoritmu.";
     public IReadOnlyList<string> Sources => _manager?.GetSessions().Select(s => s.SourceAppUserModelId).Distinct().ToArray() ?? [];
     public event Action? Changed;
     public TimeSpan Position
@@ -36,6 +36,7 @@ internal sealed class MediaService : IDisposable
         if (_disposed || _initializing) return;
         if (_manager is not null) { Select(_pinnedSource); return; }
         _initializing = true;
+        Status = "Menghubungkan media Windows…";
         try
         {
             var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
