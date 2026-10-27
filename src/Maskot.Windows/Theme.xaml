@@ -15,9 +15,6 @@
   <Setter Property="Cursor" Value="Hand" /><Setter Property="FontSize" Value="13" />
   <Setter Property="Template"><Setter.Value>
    <ControlTemplate TargetType="Button">
-    <ControlTemplate.Resources>
-     <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" /></Style>
-    </ControlTemplate.Resources>
     <Border x:Name="Body" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
      <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Border>
@@ -33,6 +30,17 @@
  <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
   <Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="Foreground" Value="#080809" />
   <Setter Property="FontWeight" Value="SemiBold" />
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Border x:Name="PrimaryBody" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+    <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+   </Border>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PrimaryBody" Property="Opacity" Value=".8" /></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter TargetName="PrimaryBody" Property="Opacity" Value=".65" /></Trigger>
+    <Trigger Property="IsEnabled" Value="False"><Setter TargetName="PrimaryBody" Property="Opacity" Value=".3" /></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="PrimaryBody" Property="BorderBrush" Value="#A9CFFF" /><Setter TargetName="PrimaryBody" Property="BorderThickness" Value="2" /></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style x:Key="MediaPlay" TargetType="Button" BasedOn="{StaticResource Primary}">
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
