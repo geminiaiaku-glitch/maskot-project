@@ -27,7 +27,7 @@ public static class MascotAnimation
             MascotPose.Sit => new(5 + breath * 2, 0, breath * 3, -22, 22, 8, -8,
                 tail * .65, eyes, 1 + breath * .018, 0),
             MascotPose.Greet => new(-2 + breath * 2.2, 0, Math.Sin(seconds * 2) * 7,
-                0, 0, 0, 24 + Math.Sin(seconds * 10) * 19, tail, eyes, 1 + breath * .02, 0),
+                0, 0, 0, -35 + Math.Sin(seconds * 10) * 18, tail, eyes, 1 + breath * .02, 0),
             _ => new(breath * 2.8, 0, Math.Sin(seconds * 1.2) * 3, 0, 0,
                 breath * 3, -breath * 3, tail, eyes, 1 + breath * .025, 0)
         };

@@ -1,6 +1,7 @@
 # Pemeriksaan langsung Windows
 
-**Belum dijalankan di cloud Linux.** Isi hasil, konfigurasi Windows, versi pemutar,
+**Checklist manual Windows 11; belum dijalankan penuh.** Regresi WPF otomatis
+pada Windows runner sudah tersedia; itu tidak menggantikan seluruh checklist ini. Isi hasil, konfigurasi Windows, versi pemutar,
 monitor/DPI, langkah reproduksi dan screenshot setelah mengujinya. Jangan mengubah
 kotak menjadi lulus berdasarkan build atau tes core saja.
 
@@ -61,3 +62,7 @@ startup harus mati pada profil baru. Data uji dapat dicadangkan dari LocalAppDat
 Tes backup dapat dilakukan pada data uji: lakukan dua penyimpanan, tutup aplikasi,
 cadangkan folder, rusak JSON utama, mulai lagi. Pastikan ada pemberitahuan pemulihan,
 backup tidak ditimpa dengan JSON rusak, dan salinan `.corrupt-*` dipertahankan.
+
+Tambahan 0.2: setelah upgrade dari 0.1, pastikan animasi aktif dan hide fullscreen
+mati tanpa menghilangkan data. Periksa kaki/ekor/kedip, idle saat diam/panel terbuka,
+dan Momo di atas browser fullscreen atau jendela dimaksimalkan.

@@ -9,12 +9,14 @@ penyimpanan lokal, tanpa akun atau backend.
 Target utama: **Windows 11 x64**. API minimum Windows 10 2004 (build 19041), tetapi
 Windows 10 belum diuji. Build ARM64 belum disediakan.
 
-1. [Unduh **Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/raw/refs/heads/downloads/Maskot-win-x64.zip).
-   Jika ingin melihat halaman file terlebih dahulu, buka [halaman unduhan](https://github.com/geminiaiaku-glitch/maskot-project/tree/downloads).
+1. Jika versi lama sedang berjalan, klik kanan Momo atau ikon Momo di dekat jam Windows,
+   lalu pilih **Keluar**.
+2. [Unduh **Maskot 0.2 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.2.0-preview.1/Maskot-win-x64.zip).
+   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.2.0-preview.1).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
-2. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
+3. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
    sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
-3. Momo muncul di bawah layar. Klik tubuhnya untuk membuka panel; klik kanan untuk
+4. Momo muncul di bawah layar. Klik tubuhnya untuk membuka panel; klik kanan untuk
    Jalan-jalan, Diam di sini, Pengaturan, atau Keluar.
 
 Build pengembangan belum ditandatangani. Ini bukan installer dan tidak menambahkan
@@ -26,6 +28,13 @@ dan menyala saat memenuhi syarat. Lepas untuk menjadi notch. Tarik badan notch
 lebih dari sekitar 62 DIP ke bawah untuk melepaskannya; lepas di tempat lain agar
 diam di sana. Escape mengembalikan posisi dan mode sebelum drag. Drag tidak membuka
 panel. Pilih Jalan-jalan untuk berjalan lagi. Pergantian bentuk tidak mereset fitur.
+
+**Perbaikan 0.2:** animasi kaki, tangan, ekor, napas dan kedip terpisah dari gerakan
+jendela. Momo tetap beranimasi saat diam/panel terbuka dan tetap di atas jendela
+fullscreen secara default. Nilai bawaan versi lama dimigrasikan tanpa menghapus
+catatan/tugas/posisi. Opsi menyembunyikan saat fullscreen dapat diaktifkan sendiri.
+Panel hitam ringkas dan kontrol musik memakai Nusa sebagai referensi visual;
+implementasi dan aset tetap orisinal. Lihat [catatan desain](docs/DESIGN.md).
 
 ## Fitur
 
@@ -50,6 +59,8 @@ panel. Pilih Jalan-jalan untuk berjalan lagi. Pergantian bentuk tidak mereset fi
   monitor hilang dipulihkan ke layar yang tersedia, target docking per monitor.
   Posisi berjalan menyesuaikan geometri taskbar aktual dengan transisi; tersedia
   margin 5 DIP agar tepi pemuncul auto-hide tetap bebas.
+  Selalu di atas jendela desktop biasa/borderless; fullscreen eksklusif game dan
+  secure desktop Windows tidak dapat ditimpa jendela WPF biasa.
 
 ## Data dan privasi
 
@@ -74,6 +85,16 @@ Di Windows, dari root proyek:
 ```powershell
 ./scripts/build-windows.ps1 -Run
 ```
+
+Untuk menjalankan regresi UI pada desktop/runner Windows, sesudah publish:
+
+```powershell
+./scripts/test-windows-ui.ps1
+```
+
+Tes ini memulai instance terisolasi, tidak membaca data/media pengguna, mengukur
+posisi HWND, membandingkan piksel frame animasi, menguji Z-order di atas jendela
+fullscreen uji, dan menyimpan PNG serta JSON pada `artifacts/windows-smoke/`.
 
 Atau:
 
@@ -101,7 +122,8 @@ dan CDN NuGet yang dipakai registry. Lirik memerlukan `lrclib.net` hanya saat ak
 GitHub Actions (`.github/workflows/windows.yml`) menyediakan restore terkunci,
 tes core, publish Windows dan upload artefak. Status dapat dilihat pada tab Actions.
 Tag versi `v*` membuat rilis percobaan beserta ZIP unduhan setelah build dan tes
-Windows berhasil. Workflow ini **bukan** pengujian desktop otomatis.
+Windows berhasil. Workflow juga menjalankan regresi WPF otomatis; pengujian manual
+Windows 11 untuk taskbar, media, fokus, click-through dan monitor/DPI tetap terpisah.
 
 ## Struktur
 
@@ -118,8 +140,9 @@ docs/                  spesifikasi, checklist penerimaan, laporan validasi
 Lihat [laporan pengujian](docs/TESTING.md) untuk hasil yang benar-benar dijalankan
 dan [checklist Windows](docs/WINDOWS-ACCEPTANCE.md) sebelum rilis harian.
 
-UI Windows, alpha click-through, fokus, media nyata, taskbar auto-hide, monitor/DPI,
-dan tray **belum diuji langsung** di cloud Linux. Taskbar memakai sampling geometri
+Regresi WPF otomatis sudah berjalan pada Windows runner. Alpha click-through,
+fokus pada aplikasi lain, media nyata, taskbar auto-hide, monitor/DPI, dan tray
+**belum diuji manual di Windows 11**. Taskbar memakai sampling geometri
 1 Hz, bukan event visibilitas resmi; konfigurasi shell khusus dapat berbeda. Margin
 tepi memberi fallback stabil tanpa mengubah setting taskbar, tetapi auto-hide tetap
 harus diuji di Windows. Startup dengan Windows, balloon notification, file shell

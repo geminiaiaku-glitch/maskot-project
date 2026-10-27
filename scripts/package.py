@@ -35,17 +35,7 @@ for name in ["TESTING.md", "WINDOWS-ACCEPTANCE.md"]:
 (output / "docs").mkdir(exist_ok=True)
 for document in (root / "docs").glob("*.md"):
     shutil.copy2(document, output / "docs" / document.name)
-(output / "MULAI-DI-SINI.txt").write_text(
-    "MASKOT / MOMO 0.1\n\n"
-    "Windows 11 x64. Jalankan Maskot.exe dari folder ini.\n"
-    "Klik Momo: panel. Klik kanan: menu. Seret ke tengah atas: notch.\n"
-    "Tarik notch ke bawah: maskot. Escape: batalkan drag.\n"
-    "Keluar sepenuhnya melalui menu atau ikon tray.\n\n"
-    "Data lokal: %LOCALAPPDATA%\\Maskot\\state.json\n"
-    "Build cloud ini belum dijalankan pada desktop Windows.\n"
-    "Baca TESTING.md dan WINDOWS-ACCEPTANCE.md sebelum menilai kesiapan rilis.\n",
-    encoding="utf-8",
-)
+shutil.copy2(root / "docs/MULAI-DI-SINI.txt", output / "MULAI-DI-SINI.txt")
 archive = root / "artifacts/Maskot-win-x64.zip"
 with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zipout:
     for path in sorted(output.rglob("*")):

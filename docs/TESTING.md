@@ -1,72 +1,61 @@
-# Laporan validasi · 27 Oktober 2026
+# Laporan validasi 0.2 · 27 Oktober 2026
 
-Lingkungan: Debian 13 x86-64 di cloud, SDK resmi .NET 10.0.100 (SHA512 diverifikasi
-terhadap metadata rilis Microsoft), tanpa desktop Windows/Wine.
+## Core dan cross-build di cloud
 
-## Sudah dijalankan
+Debian 13 x64, .NET SDK 10.0.100 tepat, checksum SDK resmi diverifikasi.
 
-- Restore dependensi dari NuGet resmi, lalu restore ulang dengan locked mode.
-- `bash scripts/bootstrap-cloud.sh`: menggunakan SDK terpasang dan restore terkunci;
-  jalur instalasi SDK sebelumnya dijalankan dengan verifikasi SHA512 resmi.
-- `bash scripts/dev.sh check`: restore, tes core, cross-build WPF Windows.
-- `bash scripts/dev.sh test`: **32 lulus, 0 gagal, 0 dilewati**. Runner xUnit melalui
-  VSTest, hasil TRX pada `artifacts/test-results/core.trx`.
-- `bash scripts/dev.sh publish`: aplikasi **Windows x64 self-contained** berhasil
-  dipublikasikan. Build WPF/XAML/C#/WinRT: **0 peringatan, 0 error**.
-- `bash -n scripts/dev.sh scripts/bootstrap-cloud.sh`: sintaks shell valid.
-- `python3 scripts/package.py`: ZIP portable dibuat, CRC arsip diverifikasi,
-  lisensi runtime disertakan, checksum SHA256 executable/ZIP ditulis. Identitas
-  binary diperiksa sebagai PE32+ Windows GUI x86-64; ini bukan eksekusi UI.
-- `scripts/build-windows.ps1` juga dijalankan melalui PowerShell 7.5.4 di Linux:
-  restore terkunci, 32 tes, publish, pengemasan, dan checksum berhasil.
-- Paket di branch `downloads` telah diunduh ulang dari URL GitHub publik:
-  HTTP 200 `application/zip`, SHA256 sesuai, CRC ZIP valid, `Maskot.exe` tersedia.
+- `bash scripts/dev.sh check`: **44 tes lulus, 0 gagal, 0 dilewati**; hasil terkini
+  di `artifacts/test-results/core.trx`. Build WPF Windows: 0 peringatan, 0 error.
+- Tes baru memeriksa langkah kaki berlawanan, blink terbuka/tertutup, animasi idle
+  tanpa perpindahan posisi, pose lain, animasi dimatikan, migrasi default fullscreen
+  dan animasi tanpa kehilangan data, pilihan pengguna setelah migrasi, respons
+  Jalan-jalan serta notifikasi penutupan panel berulang.
+- Tes sebelumnya tetap mencakup drag/click, Escape, docking/undock/hysteresis,
+  monitor negatif/DPI, penempatan panel, timer/sleep, LRC, JSON backup dan shelf.
+- Pengemasan PowerShell juga berhasil dijalankan di Linux; itu bukan uji UI Windows.
 
-Workflow Windows pertama gagal dengan NU1004 karena `latestPatch` memilih SDK
-patch lain yang meminta ILLink 10.0.13, sedangkan lockfile memakai 10.0.0.
-`global.json` kini mengunci SDK 10.0.100 secara tepat. [Workflow Windows setelah
-perbaikan](https://github.com/geminiaiaku-glitch/maskot-project/actions/runs/40436742889)
-berhasil: restore, tes core, publish dan pengemasan PowerShell selesai, menghasilkan
-artefak aplikasi serta hasil tes. Ini memverifikasi build pada Windows runner,
-belum pengujian interaksi desktop. Hasil TRX juga dimasukkan dalam paket rilis.
+## Regresi aplikasi WPF pada Windows
 
-Tes mencakup klik/jitter, offset drag, tidak memicu klik setelah drag, mode diam,
-docking hanya saat release, luar target, hysteresis, undock tanpa langsung redock,
-redock setelah keluar target, Escape pada ketiga mode, monitor negatif, DPI,
-panel/proximity pause, bounce, penyesuaian taskbar pada model geometri, monitor
-hilang, posisi panel, timer pause/resume/deadline/sleep, LRC, normalisasi, persistensi
-lintas restart, backup JSON rusak, dan shelf yang tidak menghapus file asli.
+[Run awal perbaikan berhasil](https://github.com/geminiaiaku-glitch/maskot-project/actions/runs/40440228617).
+Workflow `.github/workflows/windows.yml` menjalankan aplikasi terpublikasi melalui
+`scripts/test-windows-ui.ps1`. Instance memakai direktori data sementara, mutex
+sendiri, media lokal tidak dibaca, dan renderer software untuk hasil yang konsisten.
 
-Tes taskbar memakai input geometri yang diberikan ke core. Tes itu **tidak**
-membuktikan deteksi taskbar Windows bekerja. Tes media lokal tidak dijalankan.
+15 pemeriksaan mencakup:
 
-## Belum dijalankan
+- View termuat dan terlihat; hide fullscreen mati secara default.
+- HWND benar-benar berpindah saat berjalan, clock frame bertambah, **piksel frame
+  hasil render berubah**, bukan hanya nilai model atau PID.
+- Posisi diam tetap, tetapi piksel idle berubah; opsi animasi mati membuat frame
+  stabil.
+- Momo tetap terlihat dan berada lebih tinggi dalam Z-order daripada jendela uji
+  fullscreen/topmost yang menutupi monitor.
+- Panel terbuka tanpa menghentikan animasi karakter. Empat tab dirender ke PNG.
+- Docking menampilkan notch. Clock karakter berhenti saat view tersembunyi.
 
-- Eksekusi Maskot.exe dan pemeriksaan visual WPF pada Windows 11 maupun 10.
-- Transparansi/click-through, fokus/input native, tray, autostart, Explorer
-  drag-and-drop, posisi taskbar yang sebenarnya dan auto-hide.
-- GSMTC dengan Spotify/browser, kontrol yang ditolak pemutar, artwork/timeline,
-  LRCLIB online/offline menggunakan aplikasi yang berjalan.
-- Multi-monitor/DPI dan sleep/resume perangkat Windows nyata; CPU/RAM UI.
+Setiap run memakai folder unik. `result.json` harus menyatakan `passed: true` dan
+proses harus berakhir 0. Kegagalan/time-out menggagalkan workflow dan penerbitan
+rilis. PNG, JSON dan TRX run rilis disertakan dalam paket untuk pemeriksaan.
 
-Semua skenario langsung dicatat pada [WINDOWS-ACCEPTANCE.md](WINDOWS-ACCEPTANCE.md).
-Build berhasil berarti compiler menerima kode dan paket Windows terbentuk;
-belum berarti seluruh kriteria penerimaan desktop lulus.
+## Belum diuji manual pada Windows 11
 
-## Keterbatasan implementasi
+- Game fullscreen eksklusif, semua aplikasi fullscreen pihak ketiga dan secure desktop.
+- Transparansi alpha click-through, fokus/keyboard serta Explorer drag-and-drop.
+- Sesi media Spotify/browser nyata, artwork/seek dan lirik online/offline.
+- Taskbar auto-hide aktual, sleep/resume perangkat, mixed DPI dan monitor dicabut.
+- Tray/autostart pada login pengguna nyata serta CPU/RAM jangka panjang.
 
-- Taskbar dideteksi dari visibilitas/rect aktual jendela shell dan perpotongan
-  monitor setiap detik. Ini bukan API resmi untuk transisi auto-hide. Jika shell
-  memakai animasi/rect berbeda, margin bawah menjadi fallback; hasil nyata masih
-  harus dicek. Tidak ada perubahan konfigurasi taskbar pengguna.
-- Fullscreen memakai ukuran foreground window; beberapa game/shell khusus dapat
-  memerlukan penyesuaian setelah diuji.
-- Fase Pomodoro berikutnya disiapkan dalam keadaan jeda; tidak mengejar banyak
-  siklus yang terlewat saat PC tidur. Perubahan manual jam sistem mengikuti UTC.
-- Cover/durasi/seek bergantung pada data dan izin sesi media Windows.
-- Aset Momo sementara, animasi transform vektor; belum ada sprite final.
-- Build portable belum ditandatangani. Belum ada installer, update otomatis,
-  build ARM64, atau fitur tambahan baterai/volume/pengingat minum.
+Gunakan [WINDOWS-ACCEPTANCE.md](WINDOWS-ACCEPTANCE.md) untuk uji manual. Tes fullscreen
+memakai jendela uji pada Windows runner, bukan bukti bahwa seluruh game atau semua
+konfigurasi Windows 11 telah lulus. Render PNG tidak menggantikan pemeriksaan
+click-through/fokus pada desktop pengguna.
 
-Tidak ada bug aplikasi yang dikonfirmasi lewat eksekusi Windows di lingkungan ini.
-Keterbatasan di atas dan pengujian manual yang belum dijalankan tetap terbuka.
+## Perbaikan build sebelumnya
+
+Workflow awal 0.1 gagal NU1004 karena roll-forward memilih SDK patch yang meminta
+ILLink berbeda dari lockfile. SDK dikunci tepat 10.0.100; restore terkunci, build
+Windows dan penerbitan 0.1.0-preview.2 kemudian berhasil. Dependency checksums/TLS
+verification tidak dinonaktifkan dan lockfile tidak diubah untuk mengabaikan error.
+
+Aset Momo adalah vektor orisinal sementara. Build portable belum ditandatangani;
+belum ada installer, auto-update, ARM64, baterai, volume atau pengingat minum.

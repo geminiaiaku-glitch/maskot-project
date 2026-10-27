@@ -19,7 +19,7 @@ atau perubahan pengaturan taskbar. Login startup nonaktif secara default.
 - `Maskot.Windows`: WPF, monitor/taskbar Win32, GSMTC media Windows, system tray,
   HKCU Run opsional, LRCLIB opt-in.
 - `Assets/Momo.xaml`: aset vektor orisinal sementara yang dapat diganti; animasi
-  dipisahkan dari controller dan dibatasi 20 fps. Controller berjalan 25 Hz saat
+  dipisahkan dari controller dan 20 fps saat idle / 25 fps saat berjalan. Controller berjalan 25 Hz saat
   berjalan/drag dan 5 Hz ketika diam. Deteksi monitor/taskbar/fullscreen 1 Hz.
 
 ## Tahap implementasi

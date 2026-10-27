@@ -1,6 +1,9 @@
-MASKOT / MOMO — VERSI PERCOBAAN 0.1
+MASKOT / MOMO — VERSI PERCOBAAN 0.2
 
 Untuk Windows 11 64-bit.
+
+Sebelum memperbarui, klik kanan Momo lama atau ikon Momo di dekat jam Windows,
+lalu pilih Keluar. Catatan dan tugas tidak perlu dihapus.
 
 1. Klik kanan file ZIP yang sudah diunduh, lalu pilih "Extract All" / "Ekstrak Semua".
 2. Buka folder hasil ekstraksi.
@@ -18,9 +21,12 @@ Cara menggunakan:
 - Jatuhkan file ke tubuh Momo atau notch: simpan pintasan di file shelf.
 - Untuk menutup sepenuhnya, pilih Keluar melalui menu atau ikon tray.
 
-Ini build percobaan yang belum ditandatangani. Kompilasi dan tes logika telah
-dijalankan. Perilaku visual, taskbar, klik transparan, dan media Windows masih
-memerlukan pengujian langsung. Jangan menganggap semua fitur sudah teruji.
+Momo 0.2 memiliki animasi kaki/ekor/kedip/napas dan tetap tampil di atas fullscreen
+secara default. Opsi menyembunyikan saat fullscreen bisa diaktifkan di Setelan.
+
+Ini build percobaan yang belum ditandatangani. Tes core dan regresi WPF otomatis
+pada Windows runner dijalankan. Taskbar, media nyata, klik transparan, multi-monitor
+dan perilaku di perangkat Windows 11 pengguna masih perlu pengujian manual.
 
 Jika muncul kesalahan, kirim tangkapan layar atau salin pesan kesalahannya ke chat.
 Jika Windows memblokir aplikasi, kirim pesan yang muncul agar dapat diperiksa.

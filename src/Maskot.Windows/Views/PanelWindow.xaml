@@ -34,7 +34,7 @@
         <Button Content="☷  Lirik" Click="ToggleLyricsPanel" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" Padding="0,6" Background="Transparent" Foreground="#A6A6B0" Margin="0" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
          <Button x:Name="Previous" Width="36" Height="36" Padding="10" Background="Transparent" Click="PreviousClicked" ToolTip="Lagu sebelumnya" IsEnabled="False"><Path Data="M0,0 L2,0 L2,14 L0,14 Z M15,0 L4,7 L15,14 Z" Fill="White" Stretch="Uniform" /></Button>
-         <Button x:Name="PlayPause" Width="42" Height="42" Padding="14,12" Style="{StaticResource Primary}" Click="PlayClicked" ToolTip="Putar / jeda" IsEnabled="False"><Path x:Name="PlayGlyph" Data="M1,0 L12,7 L1,14 Z" Fill="#080809" Stretch="Uniform" /></Button>
+         <Button x:Name="PlayPause" Width="42" Height="42" Padding="14,12" Style="{StaticResource MediaPlay}" Click="PlayClicked" ToolTip="Putar / jeda" IsEnabled="False"><Path x:Name="PlayGlyph" Data="M1,0 L12,7 L1,14 Z" Fill="#080809" Stretch="Uniform" /></Button>
          <Button x:Name="Next" Width="36" Height="36" Padding="10" Background="Transparent" Margin="0" Click="NextClicked" ToolTip="Lagu berikutnya" IsEnabled="False"><Path Data="M0,0 L11,7 L0,14 Z M13,0 L15,0 L15,14 L13,14 Z" Fill="White" Stretch="Uniform" /></Button>
         </StackPanel>
         <Button Content="Sumber" Click="ToggleSources" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Padding="0,6" Background="Transparent" Foreground="#A6A6B0" Margin="0" ToolTip="Pilih aplikasi pemutar musik" />
