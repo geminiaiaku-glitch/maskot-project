@@ -9,8 +9,8 @@ penyimpanan lokal, tanpa akun atau backend.
 Target utama: **Windows 11 x64**. API minimum Windows 10 2004 (build 19041), tetapi
 Windows 10 belum diuji. Build ARM64 belum disediakan.
 
-1. Buka [halaman unduhan](https://github.com/geminiaiaku-glitch/maskot-project/releases),
-   lalu unduh **Maskot-win-x64.zip** pada bagian **Assets**. Jangan pilih Source code.
+1. [Unduh **Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/raw/refs/heads/downloads/Maskot-win-x64.zip).
+   Jika ingin melihat halaman file terlebih dahulu, buka [halaman unduhan](https://github.com/geminiaiaku-glitch/maskot-project/tree/downloads).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
 2. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
    sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
