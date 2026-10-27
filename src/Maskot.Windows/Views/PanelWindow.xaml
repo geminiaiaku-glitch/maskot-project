@@ -5,6 +5,15 @@
  Background="Transparent" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
  PreviewKeyDown="PanelKeyDown" Deactivated="PanelDeactivated" AllowDrop="True" Drop="FilesDropped" DragOver="FilesDragged">
  <Window.Resources>
+  <Style TargetType="ScrollViewer">
+   <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollViewer">
+    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="6" /></Grid.ColumnDefinitions>
+     <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" CanContentScroll="{TemplateBinding CanContentScroll}" Margin="{TemplateBinding Padding}" />
+     <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Style="{StaticResource {x:Type ScrollBar}}" Orientation="Vertical" Width="4" Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}" Value="{Binding VerticalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+    </Grid>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style x:Key="PanelIcon" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
    <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="#909097" />
    <Setter Property="FontFamily" Value="Segoe MDL2 Assets" /><Setter Property="FontSize" Value="15" />

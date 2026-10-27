@@ -11,8 +11,8 @@ Windows 10 belum diuji. Build ARM64 belum disediakan.
 
 1. Jika versi lama sedang berjalan, klik kanan Momo atau ikon Momo di dekat jam Windows,
    lalu pilih **Keluar**.
-2. [Unduh **Maskot 0.4 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.4.0-preview.1/Maskot-win-x64.zip).
-   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.4.0-preview.1).
+2. [Unduh **Maskot 0.4 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.4.0-preview.2/Maskot-win-x64.zip).
+   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.4.0-preview.2).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
 3. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
    sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
