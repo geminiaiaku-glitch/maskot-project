@@ -31,3 +31,24 @@ Topmost berlaku pada desktop Windows biasa dan fullscreen berjendela/borderless.
 Fullscreen eksklusif game atau secure desktop bukan lapisan yang dapat ditimpa
 jendela WPF biasa. Pengujian taskbar, DPI dan perilaku game tetap perlu dilakukan
 langsung pada konfigurasi pengguna.
+
+## Karaoke 0.3
+
+Lirik dikelola oleh satu KaraokeSession di luar jendela panel. Lookup hanya dimulai
+setelah opt-in; perubahan track membatalkan lookup lama dan revision guard menolak
+response basi. Metadata yang sama tidak men-trigger lookup per frame. Cache di RAM
+memuat maksimal 32 dokumen selama 20 menit; error koneksi bisa dicoba ulang manual.
+
+Notch menyesuaikan ukuran menjadi maksimal 420 × 96 DIP selama sesi lirik. Geometri
+tetap di tengah monitor dan resize ditunda selama pointer ditahan. Balon lirik
+308 × 106 DIP mengikuti Momo, dibatasi work area, membalik ke bawah saat dekat
+tepi atas, memakai NOACTIVATE/TRANSPARENT dan tidak menerima klik. Balon disembunyikan
+ketika menyeret, panel terbuka, lagu dijeda atau tidak ada sesi media.
+
+Pose karaoke melapisi pose berjalan/idle tanpa mengubah mode atau posisi pilihan
+pengguna. Mulut bergerak saat lirik aktif; mikrofon berupa vektor orisinal, bukan
+akses perangkat audio. Lirik tidak tersedia menghasilkan kepala miring, mic dan
+tanda tanya. Loading/listening tidak dinyatakan sebagai lagu tanpa lirik.
+
+UI test memakai metadata dan lirik pendek buatan proyek. Probe provider hanya
+menyimpan status dan jumlah baris; tidak membundel lirik lagu layanan eksternal.

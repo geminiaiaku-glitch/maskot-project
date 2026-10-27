@@ -1,36 +1,41 @@
-Perbaikan **Maskot / Momo 0.2** untuk Windows 11 x64.
+**Maskot / Momo 0.3 — karaoke dan lirik** untuk Windows x64.
 
-## Yang diperbaiki
+## Fitur baru
 
-- Animasi terlihat jelas: kaki melangkah bergantian, ekor bergoyang, badan bernapas,
-  mata berkedip, kepala bergerak dan tangan menyapa. Animasi tetap aktif saat Momo
-  diam atau panel terbuka, dan berhenti saat karakter tersembunyi/animasi dimatikan.
-- Momo tetap tampil di lapisan teratas saat aplikasi lain fullscreen. Nilai default
-  versi lama yang menyembunyikannya diperbarui otomatis. Catatan, tugas, timer,
-  posisi, mode dan file shelf tetap dipertahankan.
-- Panel mengikuti arah visual Nusa: hitam, sudut membulat, cover di kiri, seek tipis,
-  kontrol musik putih, navigasi bawah dan lirik bernuansa biru. Implementasi/aset orisinal.
-- Status Berjalan/Diam/Notch dan tombol Jalan-jalan lebih mudah ditemukan.
+- Notch menampilkan baris lirik aktif dan baris berikutnya, mengikuti posisi lagu.
+- Dalam mode Momo, karakter memegang mikrofon, menggerakkan mulut dan bergoyang.
+  Lirik muncul di balon teks dekat Momo yang tidak menghalangi klik ke aplikasi lain.
+- Saat lirik tidak tersedia, Momo memiringkan kepala, memeriksa mic dan menampilkan
+  tanda tanya. Loading, instrumental, offline dan jeda ditangani terpisah.
+- Lirik terus mengikuti lagu meskipun panel tertutup atau mode Momo/notch berganti.
+- Seek maju/mundur langsung memilih baris yang sesuai. Posisi media tanpa durasi
+  dan playback rate juga ditangani.
 
-## Cara memperbarui
+## Cara memperbarui dan mengaktifkan
 
-1. Klik kanan Momo lama atau ikon Momo di dekat jam Windows, lalu pilih **Keluar**.
-2. Unduh **Maskot-win-x64.zip** pada bagian **Assets**. Jangan pilih Source code.
-3. Klik kanan ZIP → **Extract All / Ekstrak Semua**.
-4. Buka folder hasil ekstraksi dan klik dua kali **Maskot.exe**.
+1. Klik kanan Momo lama → **Keluar**.
+2. Unduh **Maskot-win-x64.zip**, pilih **Extract All / Ekstrak Semua**, lalu jalankan
+   **Maskot.exe** dari folder baru. Data catatan/tugas tetap tersimpan.
+3. Klik kanan Momo → **Lirik & karaoke** → **Aktifkan lirik online**.
+   Bisa juga melalui Setelan → Lirik online melalui LRCLIB.
+4. Putar lagu pada pemutar yang menyediakan sesi media Windows. Pilih sumber
+   melalui panel Musik jika beberapa pemutar aktif.
 
-Tidak perlu alat coding, .NET tambahan, atau menghapus data aplikasi.
+Lirik bersifat opt-in. Judul, artis dan durasi dikirim lewat HTTPS ke LRCLIB.
+Tidak memerlukan akun/API key. Mikrofon adalah aksesori animasi: tidak merekam
+atau mengakses perangkat mikrofon dan tidak menambahkan suara/vokal.
 
-## Pengujian
+## Batas dan pengujian
 
-44 tes core mencakup mode/drag/docking, animasi, migrasi pengaturan, timer dan data.
-Workflow Windows juga menjalankan aplikasi WPF: mengukur gerak HWND, membandingkan
-piksel frame jalan/idle, memeriksa opsi animasi, menguji Momo di atas jendela uji
-fullscreen, panel, docking dan penghentian clock saat karakter tersembunyi.
-Laporan JSON serta PNG hasil render ada di folder `windows-smoke` dalam paket.
+Sinkronisasi mengikuti timestamp yang disediakan sumber, bukan pengenalan suara.
+Jika hanya ada plain lyrics, teks diberi label **tanpa sinkronisasi**; waktu baris
+tidak ditebak. Tidak semua lagu tersedia atau memiliki metadata yang cocok.
+Kegagalan layanan lirik tidak mematikan kontrol musik. Tombol **Cari lagi** ada
+pada panel Lirik.
 
-Ini tetap **versi percobaan**. Pengujian otomatis di Windows runner bukan pengujian
-manual penuh di Windows 11. Taskbar auto-hide, media nyata, DPI multi-monitor,
-click-through dan fokus antar-aplikasi perlu dicoba pada perangkat pengguna.
-Fullscreen eksklusif game dan secure desktop Windows tidak dapat ditimpa jendela
-WPF biasa; gunakan borderless/windowed pada game jika ingin overlay terlihat.
+Tes core dan regresi WPF Windows memeriksa timeline, cancellation/stale response,
+cache/HTTP, pergantian mode, mic/mulut, ekspresi bingung, pause, balon pasif dan opt-in.
+PNG serta JSON hasil run ada dalam folder windows-smoke, dengan lirik contoh
+orisinal dan media uji. Hasil probe HTTPS LRCLIB dicatat terpisah tanpa teks lagu.
+Integrasi dengan pemutar dan lagu pengguna nyata tetap perlu dicoba di perangkat
+pengguna; ini versi percobaan.

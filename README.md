@@ -11,8 +11,8 @@ Windows 10 belum diuji. Build ARM64 belum disediakan.
 
 1. Jika versi lama sedang berjalan, klik kanan Momo atau ikon Momo di dekat jam Windows,
    lalu pilih **Keluar**.
-2. [Unduh **Maskot 0.2 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.2.0-preview.3/Maskot-win-x64.zip).
-   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.2.0-preview.3).
+2. [Unduh **Maskot 0.3 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.3.0-preview.1/Maskot-win-x64.zip).
+   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.3.0-preview.1).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
 3. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
    sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
@@ -35,6 +35,16 @@ fullscreen secara default. Nilai bawaan versi lama dimigrasikan tanpa menghapus
 catatan/tugas/posisi. Opsi menyembunyikan saat fullscreen dapat diaktifkan sendiri.
 Panel hitam ringkas dan kontrol musik memakai Nusa sebagai referensi visual;
 implementasi dan aset tetap orisinal. Lihat [catatan desain](docs/DESIGN.md).
+
+**Baru di 0.3 — karaoke:** notch menampilkan baris lirik aktif/berikutnya; Momo
+bernyanyi dengan animasi mulut dan mic, disertai balon lirik pasif. Tanpa lirik,
+Momo kebingungan dengan mic. Klik kanan Momo → **Lirik & karaoke** →
+**Aktifkan lirik online**. Audio tetap dari pemutar; mic tidak direkam.
+
+Lirik diproses bersama di luar panel, sehingga panel tidak perlu terbuka. Saat
+lagu dijeda Momo berhenti bernyanyi. Lirik biasa tanpa timestamp ditandai sebagai
+tidak tersinkron; aplikasi tidak mengarang waktu baris. Tombol Cari lagi tersedia
+untuk koneksi gagal atau lirik yang belum ditemukan.
 
 ## Fitur
 

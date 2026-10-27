@@ -61,3 +61,22 @@ verification tidak dinonaktifkan dan lockfile tidak diubah untuk mengabaikan err
 
 Aset Momo adalah vektor orisinal sementara. Build portable belum ditandatangani;
 belum ada installer, auto-update, ARM64, baterai, volume atau pengingat minum.
+
+## Tambahan 0.3
+
+79 tes core lulus pada cloud Linux: presentation karaoke, pencarian/cache HTTP,
+opt-in, pembatalan, response track lama, perubahan metadata, seek/rewind, jeda,
+plain/blank lyrics, pose sing/confused, geometri notch/balon dan timeline berdurasi
+tidak diketahui. Build Windows cross-target juga berhasil tanpa error/peringatan.
+
+Regresi WPF ditambah 15 pemeriksaan karaoke di atas 16 pemeriksaan sebelumnya:
+notch membesar dan menampilkan teks yang benar, seek/rewind, mode tetap memakai
+lirik yang sama tanpa refetch, mic dan mulut, balon visible/pasif, frame bernyanyi,
+ekspresi bingung, error, jeda, tidak ada media dan opt-in. Hasil run rilis harus
+menyatakan passed:true untuk seluruh pemeriksaan sebelum paket diterbitkan.
+
+provider-probe.json memuat pengujian HTTPS LRCLIB menggunakan metadata publik
+(bukan sesi pengguna), hanya mencatat ketersediaan dan jumlah baris tanpa teks lagu.
+Jika layanan sedang unavailable, hasil itu terpisah dari tes logika/UI dan pengguna
+akan mendapat state fallback. Fixture UI tidak membuktikan seluruh pemutar/lagu
+pengguna nyata bekerja.

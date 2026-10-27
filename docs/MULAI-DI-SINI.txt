@@ -1,4 +1,4 @@
-MASKOT / MOMO — VERSI PERCOBAAN 0.2
+MASKOT / MOMO — VERSI PERCOBAAN 0.3
 
 Untuk Windows 11 64-bit.
 
@@ -21,7 +21,7 @@ Cara menggunakan:
 - Jatuhkan file ke tubuh Momo atau notch: simpan pintasan di file shelf.
 - Untuk menutup sepenuhnya, pilih Keluar melalui menu atau ikon tray.
 
-Momo 0.2 memiliki animasi kaki/ekor/kedip/napas dan tetap tampil di atas fullscreen
+Momo 0.3 memiliki animasi kaki/ekor/kedip/napas dan tetap tampil di atas fullscreen
 secara default. Opsi menyembunyikan saat fullscreen bisa diaktifkan di Setelan.
 
 Ini build percobaan yang belum ditandatangani. Tes core dan regresi WPF otomatis
@@ -35,3 +35,10 @@ Data catatan/tugas/pengaturan: %LOCALAPPDATA%\Maskot\state.json
 Log kesalahan aplikasi: %LOCALAPPDATA%\Maskot\errors.log
 
 Baca TESTING.md dan WINDOWS-ACCEPTANCE.md untuk rincian status pengujian.
+
+KARAOKE / LIRIK
+Klik kanan Momo → Lirik & karaoke → Aktifkan lirik online, lalu putar lagu.
+Judul/artis/durasi lagu dikirim ke LRCLIB. Notch menampilkan lirik; Momo bernyanyi
+dengan mic dan balon teks. Jika lirik tidak tersedia, Momo berekspresi bingung.
+Tidak ada rekaman mikrofon atau suara tambahan. Saat jeda, animasi bernyanyi berhenti.
+Teks tanpa timestamp diberi label tanpa sinkronisasi.
