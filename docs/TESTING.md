@@ -114,3 +114,14 @@ NuGet advisory check dijalankan pada build Windows dan menyimpan dependency-audi
 build-info.json merekam commit, SDK dan framework yang disertakan. Audit luas dan
 batas pengujian dijelaskan dalam AUDIT-0.3.2.md. Ini bukan hasil benchmark CPU/RAM
 atau pengujian seluruh pemutar/DPI/perangkat Windows pengguna.
+
+## Interaksi notch 0.4
+
+106 tes core mencakup sembilan skenario tambahan hover intent, grace, suppression,
+editing, panel manual dan fit monitor negatif/DPI. Compact lyric pill mengubah
+ukuran menjadi 360×44DIP. Windows self-test menambah 19 pemeriksaan ke 52 sebelumnya
+(total 71): preview tanpa aktivasi, anchor/header, carousel wrap, kontrol timer,
+catatan, lirik dua kolom, leave/reopen, reduced motion dan header drag/Escape.
+PNG notch-carousel-* serta result.json dalam paket adalah hasil run native aktual;
+penerbitan mensyaratkan seluruh pemeriksaan lulus. Pemutar pengguna nyata, mixed DPI,
+klik manual/dropdown dan fullscreen eksklusif tetap memerlukan uji perangkat nyata.

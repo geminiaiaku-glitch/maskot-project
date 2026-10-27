@@ -55,8 +55,8 @@ public sealed class MascotController
     {
         if (PointerHeld) return;
         var display = displays.FirstOrDefault(d => d.Id == MonitorId) ?? DesktopGeometry.Nearest(displays, Position);
-        var width = expanded ? Math.Min(420, display.Bounds.Width / display.Scale - 16) : 230;
-        var height = expanded ? 96 : 42;
+        var width = expanded ? Math.Min(360, display.Bounds.Width / display.Scale - 16) : 230;
+        var height = expanded ? 44 : 42;
         if (NotchWidth == width && NotchHeight == height) return;
         NotchWidth = width; NotchHeight = height;
         if (Mode == MascotMode.Notch) Position = DockPosition(display);

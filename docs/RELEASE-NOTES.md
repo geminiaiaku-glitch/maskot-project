@@ -1,21 +1,21 @@
-**Maskot / Momo 0.3.2 — optimasi dan pemeriksaan bersama Astra** untuk Windows x64.
+**Maskot / Momo 0.4 — notch interaktif mengikuti video referensi** untuk Windows x64.
 
-- Play/pause mengikuti pemutar tanpa menunggu pembacaan ulang gambar album.
-- Event metadata yang bertumpuk digabung; hasil dari pemutar lama dibatalkan/diabaikan.
-- Mengurangi pembaruan panel tersembunyi, pemindaian lirik, alokasi animasi dan
-  penulisan data identik. Animasi yang dimatikan benar-benar menghentikan frame clock.
-- Memulihkan backup saat file utama hilang, melindungi backup dari autosave identik,
-  menulis data secara atomik dan menangani entri data lama yang kosong/rusak.
-- Memperbarui runtime bawaan ke .NET 10.0.14 dan memeriksa advisory dependensi.
+- Hover notch untuk membuka panel; jauhkan kursor untuk kembali ringkas.
+- Panel menyatu dengan tepi atas layar, dengan transisi ukuran dan konten.
+- Navigasi carousel memakai panah, ikon dan indikator halaman; Ctrl+←/→ tersedia.
+- Musik ringkas dengan cover/progres/kontrol; ikon lirik membuka dua kolom
+  berisi baris sebelumnya, aktif dan berikutnya pada latar biru gelap.
+- Lirik compact menjadi satu baris. Catatan, tugas, shelf, timer dan setelan tetap
+  tersedia; editor/seek/dropdown tidak terganggu penutupan hover otomatis.
+- Preview tidak mengambil fokus keyboard. ×/Escape menutup tanpa reopen langsung.
+- Seret header notch turun untuk kembali menjadi Momo; Escape membatalkan drag.
+- Opsi animasi mati tetap dihormati. Semua aset/implementasi dibuat untuk proyek ini.
 
-Mic tetap hanya muncul saat musik diputar; tanpa lirik Momo memakai wajah/gestur
-bingung tanpa tulisan. Lirik tersedia tetap mengikuti lagu di notch/balon.
+**Mulai:** klik kanan Momo → **Jadi notch**, lalu dekatkan kursor.
+Untuk update: Keluar dari Momo lama, ekstrak ZIP baru, jalankan Maskot.exe.
+Untuk lirik online: klik kanan → Lirik & karaoke → Aktifkan lirik online.
 
-**Cara update:** klik kanan Momo lama → Keluar, ekstrak seluruh ZIP baru,
-lalu jalankan Maskot.exe dari folder baru. Tidak perlu memasang .NET sendiri.
-
-97 tes core dan build WPF lulus di cloud. Penerbitan juga mensyaratkan 52
-pemeriksaan aplikasi Windows lulus. JSON/PNG/TRX dan informasi runtime ada di paket.
-Pengujian media memakai adapter uji dan lirik contoh; seluruh pemutar, multi-monitor,
-DPI, autostart dan penggunaan lama masih memerlukan pemeriksaan pada perangkat nyata.
-Tidak ada klaim persentase penghematan CPU/RAM tanpa benchmark yang sebanding.
+106 tes core dan build WPF diperiksa di cloud; rilis juga mensyaratkan 71
+pemeriksaan native Windows. JSON/PNG/TRX, build-info dan dependency-audit ada di ZIP.
+Pengujian memakai lirik orisinal dan adapter media uji. Seluruh pemutar, monitor/DPI,
+input manual dan fullscreen eksklusif tetap perlu dicoba di perangkat pengguna.

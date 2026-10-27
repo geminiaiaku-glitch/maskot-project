@@ -11,8 +11,8 @@ Windows 10 belum diuji. Build ARM64 belum disediakan.
 
 1. Jika versi lama sedang berjalan, klik kanan Momo atau ikon Momo di dekat jam Windows,
    lalu pilih **Keluar**.
-2. [Unduh **Maskot 0.3.2 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.3.2-preview.1/Maskot-win-x64.zip).
-   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.3.2-preview.1).
+2. [Unduh **Maskot 0.4 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.4.0-preview.1/Maskot-win-x64.zip).
+   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.4.0-preview.1).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
 3. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
    sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
@@ -53,6 +53,13 @@ untuk koneksi gagal atau lirik yang belum ditemukan.
 beruntun digabung, panel tersembunyi tidak terus diperbarui, dan data identik tidak
 ditulis berulang. Pemulihan backup diperkuat dan paket menyertakan .NET 10.0.14.
 Lihat [hasil audit bersama Astra](docs/AUDIT-0.3.2.md).
+
+**Baru di 0.4 — notch interaktif:** klik kanan Momo → **Jadi notch**, lalu dekatkan
+kursor ke notch. Panel melebar tanpa mengambil fokus keyboard; panah dan ikon
+bawah mengganti halaman Musik/Fokus/Ruang/Setelan. Ctrl+←/→ juga dapat digunakan
+selama tidak mengedit teks. Ikon lirik membuka tampilan dua kolom. Jauhkan kursor
+untuk menutup preview, atau tutup dengan ×/Escape. Drag bagian judul notch ke
+bawah untuk kembali menjadi Momo. Detail visual mengikuti video referensi pengguna.
 
 ## Fitur
 

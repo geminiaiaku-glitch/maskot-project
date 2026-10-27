@@ -97,7 +97,7 @@ internal static class WindowsSmoke
                 TimeSpan.Zero, TimeSpan.FromSeconds(12), true, false, false, false, false);
             var lyrics = LyricsDocument.FromText("[00:00.00]Langkah kecil menemani hari\n[00:03.00]Nada ringan membawa cerita\n[00:07.00]Momo tersenyum di sini", null);
             app.SetKaraokeFixture(song, lyrics, TimeSpan.FromSeconds(1)); await Task.Delay(150);
-            Check("lyric_notch_expands", Desktop.WindowBounds(mascot).Width >= 400 && Desktop.WindowBounds(mascot).Height >= 90);
+            Check("lyric_notch_is_a_compact_pill", Desktop.WindowBounds(mascot).Width >= 350 && Desktop.WindowBounds(mascot).Height is >= 40 and <= 50);
             Check("notch_displays_active_lyric", mascot.NotchLyricLine.Text == "Langkah kecil menemani hari");
             Capture((FrameworkElement)mascot.Content, Path.Combine(output, "karaoke-notch.png"));
             app.SeekKaraokeFixture(TimeSpan.FromSeconds(5)); await Task.Delay(100);
@@ -157,6 +157,7 @@ internal static class WindowsSmoke
             app.SetKaraokeFixture(song with { Playing = false }, lyrics, TimeSpan.Zero); await Task.Delay(80);
             Check("pause_removes_microphone_with_lyrics_disabled", app.FixtureLyricsRequests == lookups && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
 
+            await NotchInteractionSmoke.RunAsync(app, output, Check);
             await ProbeLyricsProviderAsync(output);
         }
         catch (Exception e)
@@ -198,7 +199,7 @@ internal static class WindowsSmoke
         File.WriteAllText(Path.Combine(output, "provider-probe.json"), JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    private static string Capture(FrameworkElement visual, string path)
+    internal static string Capture(FrameworkElement visual, string path)
     {
         visual.UpdateLayout();
         var width = Math.Max(1, (int)Math.Ceiling(visual.ActualWidth));

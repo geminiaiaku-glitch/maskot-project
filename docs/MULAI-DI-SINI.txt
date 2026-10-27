@@ -1,4 +1,4 @@
-MASKOT / MOMO — VERSI PERCOBAAN 0.3.2
+MASKOT / MOMO — VERSI PERCOBAAN 0.4
 
 Untuk Windows 11 64-bit.
 
@@ -47,3 +47,10 @@ Teks tanpa timestamp diberi label tanpa sinkronisasi.
 
 Versi 0.3.2 mengurangi pekerjaan berulang saat musik berjalan dan memperkuat
 pemulihan data cadangan. Runtime .NET diperbarui ke 10.0.14.
+
+NOTCH INTERAKTIF
+Klik kanan Momo → Jadi notch. Dekatkan kursor untuk membuka panel, lalu gunakan
+panah kiri/kanan atau ikon bawah untuk Musik, Fokus, Ruang dan Setelan.
+Ikon lirik membuka tampilan musik dan lirik berdampingan. Jauhkan kursor untuk
+menutup preview; saat mengetik catatan panel tetap terbuka. × atau Escape menutup.
+Seret judul panel notch ke bawah untuk kembali menjadi Momo; Escape membatalkan drag.

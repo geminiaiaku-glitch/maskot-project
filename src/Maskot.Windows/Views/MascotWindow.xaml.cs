@@ -34,6 +34,12 @@ public partial class MascotWindow : Window
         if (e.ChangedButton != MouseButton.Left) return;
         Host.Controller.Press(Desktop.Cursor); Desktop.CaptureEscape(this); Mouse.Capture(this); e.Handled = true;
     }
+    private void HoverEntered(object sender, MouseEventArgs e) => Host.WakeNotchHover();
+    internal void BeginDragFromPanel(PointD press)
+    {
+        Host.Controller.Press(press); Desktop.CaptureEscape(this); Mouse.Capture(this);
+        Host.Controller.MovePointer(Desktop.Cursor, Host.Displays); Host.Render();
+    }
     private void PointerMove(object sender, MouseEventArgs e)
     {
         if (!Host.Controller.PointerHeld) return;
@@ -78,6 +84,7 @@ public partial class MascotWindow : Window
         void Item(string text, Action action) { var i = new MenuItem { Header = text }; i.Click += (_, _) => action(); menu.Items.Add(i); }
         Item("Jalan-jalan", Host.Walk);
         Item("Diam di sini", Host.Stay);
+        Item("Jadi notch", Host.Dock);
         Item("Pengaturan", () => Host.OpenPanel(true));
         Item("Lirik & karaoke", Host.OpenLyricsPanel);
         menu.Items.Add(new Separator()); Item("Keluar", Host.Quit);
@@ -89,7 +96,7 @@ public partial class MascotWindow : Window
         var c = Host.Controller;
         var cue = currentCue ?? Host.Cue;
         var notch = c.Mode == MascotMode.Notch;
-        Notch.Visibility = notch ? Visibility.Visible : Visibility.Collapsed;
+        Notch.Visibility = notch && !Host.PanelVisible ? Visibility.Visible : Visibility.Collapsed;
         Character.Visibility = notch ? Visibility.Collapsed : Visibility.Visible;
         if (_lastNotch is not null && _lastNotch != notch && Host.State.Preferences.ExtraAnimations)
         {
@@ -109,7 +116,10 @@ public partial class MascotWindow : Window
         SmallTimer.Text = text; NotchTimer.Text = timer.Running ? text : DateTime.Now.ToString("HH:mm");
         NotchBars.IsActive = Host.ActiveMedia?.Playing == true && Host.State.Preferences.ExtraAnimations;
         TimerPill.Visibility = timer.Running && !notch ? Visibility.Visible : Visibility.Collapsed;
-        NotchLabel.Text = Host.ActiveMedia is { } m ? (cue.Paused ? "Ⅱ " : "") + m.Title : timer.Running ? "Waktunya fokus" : "Momo";
+        NotchLabel.Text = DateTime.Now.ToString("HH:mm");
+        NotchLabel.ToolTip = Host.ActiveMedia?.Title ?? "Dekatkan kursor untuk membuka panel";
+        NotchTimer.Text = timer.Running ? text : "";
+        NotchHeader.Visibility = cue.ExpandedNotch ? Visibility.Collapsed : Visibility.Visible;
         NotchLyrics.Visibility = notch && cue.ExpandedNotch ? Visibility.Visible : Visibility.Collapsed;
         NotchLyricLine.Text = cue.Current; NotchNextLine.Text = cue.Next;
         ToolTip = c.Mode == MascotMode.Stationary ? "Diam di sini · klik kanan → Jalan-jalan untuk berjalan lagi" : "Klik untuk membuka panel · seret ke tengah atas untuk notch";

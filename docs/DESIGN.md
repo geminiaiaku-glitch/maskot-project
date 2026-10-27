@@ -56,3 +56,14 @@ diputar tetapi lirik online mati, pose Listening memegang mic tanpa lookup jarin
 
 UI test memakai metadata dan lirik pendek buatan proyek. Probe provider hanya
 menyimpan status dan jumlah baris; tidak membundel lirik lagu layanan eksternal.
+
+## Notch interaktif 0.4
+
+Referensi tambahan adalah video 31 detik yang diunggah pengguna pada 27 Oktober 2026.
+Panel menggunakan musik 420×282DIP; lirik dua kolom 620×300/330; fokus 420×360;
+ruang 420×500; setelan 420×526. Viewbox menskalakan konten saat area layar kecil.
+Notch lyric pill menjadi 360×44DIP dan menampilkan satu baris aktif; idle 230×42.
+Panel mengembang terpusat pada tepi atas dengan sudut bawah 26; di dekat Momo semua
+sudut dibulatkan. WindowMotion berhenti setelah180 ms atau saat panel ditutup.
+NotchPeek di Core menguji hover intent, leave grace, editor dan suppression setelah
+close. Mode/data tetap dikelola App/Core. Tidak mengimpor kode/aset/lirik dari video.

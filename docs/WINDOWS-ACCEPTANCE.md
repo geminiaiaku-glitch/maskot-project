@@ -71,3 +71,10 @@ backup tidak ditimpa dengan JSON rusak, dan salinan `.corrupt-*` dipertahankan.
 Tambahan 0.2: setelah upgrade dari 0.1, pastikan animasi aktif dan hide fullscreen
 mati tanpa menghilangkan data. Periksa kaki/ekor/kedip, idle saat diam/panel terbuka,
 dan Momo di atas browser fullscreen atau jendela dimaksimalkan.
+
+Tambahan 0.4: dekatkan kursor ke notch, pindahkan ke panel, lalu menjauh; pastikan
+preview tidak mengambil fokus dan memiliki jeda penutupan. Klik semua ikon/panah,
+Ctrl+←/→ tanpa mengganggu editor, toggle lirik, pilih sumber melalui popup, seek,
+serta edit catatan. Tutup dengan ×/Escape dan pastikan tidak langsung reopen.
+Seret header turun untuk undock, lalu Escape untuk membatalkan. Ulangi pada DPI
+100%, 150%, 200%, monitor kecil, fullscreen, dan opsi animasi mati.

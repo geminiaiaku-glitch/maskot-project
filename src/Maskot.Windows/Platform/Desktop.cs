@@ -38,6 +38,7 @@ internal static class Desktop
 
     public static PointD Cursor { get { GetCursorPos(out var p); return new(p.X, p.Y); } }
     public static bool EscapeDown => GetAsyncKeyState(0x1B) < 0;
+    internal static IntPtr ForegroundHandle => GetForegroundWindow();
     public static bool LeftDown => GetAsyncKeyState(0x01) < 0;
     internal const int DragEscapeId = 0x57A0;
     public static void CaptureEscape(Window window) => RegisterHotKey(new WindowInteropHelper(window).Handle, DragEscapeId, 0x4000, 0x1B);

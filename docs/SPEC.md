@@ -43,3 +43,13 @@ napas, kedip dan sapaan tetap aktif saat maskot diam. Maskot harus tetap di lapi
 teratas saat aplikasi lain fullscreen; sembunyikan saat fullscreen menjadi opt-in,
 dan nilai default lama dimigrasikan. Panel mengikuti arah visual Nusa tanpa memakai
 kode/aset aplikasinya. Tambahkan tes WPF nyata pada Windows sebelum paket diterbitkan.
+
+## Pembaruan 0.4
+
+Pola interaksi mengacu pada video Nusa yang diunggah pengguna: hover intent 180 ms,
+leave grace 400 ms, panel menyatu dengan tepi atas, carousel berpanah/icon/dot,
+transisi ukuran180 ms dan konten150–170 ms, lirik dua kolom dan compact lyric pill.
+Preview tidak mengaktifkan jendela; editor/dropdown/seek/header drag menahan
+penutupan otomatis. Klik eksplisit membuka panel biasa; Escape/× menekan reopen
+sampai kursor keluar. Header notch meneruskan drag ke controller lama untuk
+undock 62 DIP dan Escape. Semua aset/implementasi dibuat untuk proyek ini.

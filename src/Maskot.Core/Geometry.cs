@@ -27,6 +27,12 @@ public sealed record DisplayArea(string Id, RectD Bounds, RectD WorkArea, double
 
 public static class DesktopGeometry
 {
+    public static RectD NotchPanel(DisplayArea display, double width, double height)
+    {
+        var scale = Math.Min(display.Scale, Math.Min(display.WorkArea.Width / (width + 12), display.WorkArea.Height / (height + 8)));
+        var w = width * scale; var h = height * scale;
+        return new(display.Bounds.Center.X - w / 2, display.Bounds.Y, w, h);
+    }
     public static DisplayArea Nearest(IReadOnlyList<DisplayArea> displays, PointD point) =>
         displays.MinBy(d => DistanceSquared(d.Bounds, point))
         ?? throw new ArgumentException("At least one monitor is required.", nameof(displays));

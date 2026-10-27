@@ -38,6 +38,9 @@ public partial class App : Application
     private string? _smokeOutput;
     private MascotWindow? _mascot;
     private PanelWindow? _panel;
+    private WindowMotion? _panelMotion;
+    private readonly NotchPeek _peek = new();
+    private bool _previewPanel;
     private DockHintWindow? _hint;
     private LyricBubbleWindow? _lyricBubble;
     private Forms.NotifyIcon? _tray;
@@ -130,6 +133,7 @@ public partial class App : Application
         var elapsed = _clock.Elapsed.TotalSeconds;
         var delta = elapsed - _lastTick; _lastTick = elapsed;
         var now = DateTimeOffset.UtcNow;
+        if (!SmokeMode) AdvanceNotchHover(Desktop.Cursor, _clock.Elapsed);
         if (Controller.PointerHeld && Desktop.EscapeDown) _mascot?.CancelDrag();
         if (elapsed - _lastSecond >= 1)
         {
@@ -141,6 +145,7 @@ public partial class App : Application
             if (hidden) _lyricBubble?.Hide();
             if (!hidden && !Controller.PanelOpen && _mascot is not null) Desktop.KeepAbove(_mascot);
             if (!hidden && !Controller.PanelOpen && _lyricBubble is not null) Desktop.KeepAbove(_lyricBubble);
+            if (!hidden && PanelVisible && _panel is not null) Desktop.KeepAbove(_panel);
             if (State.Timer.Advance(now)) { SaveNow(); Notify(State.Timer.Phase == FocusPhase.Break ? "Sesi fokus selesai. Saatnya beristirahat. Buka panel untuk memulai istirahat." : "Istirahat selesai. Mulai sesi fokus saat kamu siap."); }
             _panel?.Tick();
         }
@@ -150,7 +155,7 @@ public partial class App : Application
         }
         if (PanelVisible) _panel?.RefreshLyrics();
         if (_saveAt is { } due && now >= due || elapsed - _lastSave >= 15) SaveNow();
-        var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : ActiveMedia?.Playing == true && State.Preferences.LyricsEnabled ? 100 : 200;
+        var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : Controller.Mode == MascotMode.Notch && (_peek.Pending || _previewPanel) ? 60 : ActiveMedia?.Playing == true && State.Preferences.LyricsEnabled ? 100 : 200;
         if (_tick is not null && _tick.Interval.TotalMilliseconds != interval) _tick.Interval = TimeSpan.FromMilliseconds(interval);
     }
 
@@ -184,22 +189,64 @@ public partial class App : Application
         var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
         // Fit the actual physical workspace, including small displays and mixed DPI.
         var height = _panel.PreferredHeight;
-        var scale = Math.Min(d.Scale, Math.Min(d.WorkArea.Width / 452, d.WorkArea.Height / (height + 12)));
-        scale = Math.Max(.5, scale);
-        var pw = 440 * scale; var ph = height * scale;
-        var p = DesktopGeometry.PlacePanel(new(Controller.Position.X, Controller.Position.Y, w, h), d.WorkArea, pw, ph, 10 * scale);
-        Desktop.Position(_panel, p, pw, ph);
+        var width = _panel.PreferredWidth;
+        var docked = Controller.Mode == MascotMode.Notch;
+        _panel.ConfigureAnchor(docked);
+        RectD target;
+        if (docked) target = DesktopGeometry.NotchPanel(d, width, height);
+        else
+        {
+            var scale = Math.Min(d.Scale, Math.Min(d.WorkArea.Width / (width + 12), d.WorkArea.Height / (height + 12)));
+            var pw = width * scale; var ph = height * scale;
+            var p = DesktopGeometry.PlacePanel(new(Controller.Position.X, Controller.Position.Y, w, h), d.WorkArea, pw, ph, 10 * scale);
+            target = new(p.X, p.Y, pw, ph);
+        }
+        _panelMotion?.Move(target, State.Preferences.ExtraAnimations);
+    }
+    internal void WakeNotchHover()
+    {
+        if (SmokeMode || Controller.Mode != MascotMode.Notch) return;
+        AdvanceNotchHover(Desktop.Cursor, _clock.Elapsed);
+        if (_tick is not null && _peek.Pending) _tick.Interval = TimeSpan.FromMilliseconds(60);
+    }
+    internal void AdvanceNotchHover(PointD cursor, TimeSpan now)
+    {
+        var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
+        var inside = new RectD(Controller.Position.X, Controller.Position.Y, w, h).Contains(cursor)
+            || PanelVisible && Desktop.WindowBounds(_panel!).Contains(cursor);
+        var action = _peek.Update(now, Controller.Mode == MascotMode.Notch && _mascot?.IsVisible == true
+            && !Controller.PointerHeld && (PanelVisible || !Controller.PanelOpen), inside,
+            PanelVisible, _previewPanel, _panel?.IsInteractionHeld == true);
+        if (action == PeekAction.Open) OpenPanel(preview: true);
+        else if (action == PeekAction.Close)
+        {
+            ClosePanel();
+            _peek.Update(now, true, false, false, false, false);
+        }
     }
     internal void TogglePanel() { if (PanelVisible) ClosePanel(); else OpenPanel(); }
     internal void RelayoutPanel() { if (PanelVisible) PositionPanel(); }
     internal void AddFiles(IEnumerable<string> paths) { OpenPanel(); _panel?.AddFiles(paths); }
-    internal void OpenPanel(bool settings = false)
+    internal void OpenPanel(bool settings = false, bool preview = false)
     {
         _forceVisibleUntil = DateTimeOffset.UtcNow.AddSeconds(10);
-        _panel ??= new();
+        if (_panel is null) { _panel = new(); _panelMotion = new(_panel); }
+        var wasVisible = PanelVisible;
+        _previewPanel = preview;
         Controller.SetPanel(true);
         if (settings) _panel.OpenSettings();
-        _panel.RefreshContent(); _panel.RefreshMedia(); _panel.Show(); PositionPanel(); _panel.Activate(); _panel.Tick(); Render();
+        _panel.RefreshContent(); _panel.RefreshMedia();
+        if (!wasVisible)
+        {
+            _panelMotion?.Reset();
+            _panel.Show();
+            if (Controller.Mode == MascotMode.Notch)
+            {
+                var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
+                Desktop.Position(_panel, Controller.Position, w, h);
+            }
+        }
+        PositionPanel(); if (!wasVisible) _panel.AnimateOpen(); if (!preview) _panel.Activate(); _panel.Tick(); Render();
     }
     internal void OpenLyricsPanel() { OpenPanel(); _panel?.ShowLyrics(); }
     internal void EnableLyrics()
@@ -208,8 +255,22 @@ public partial class App : Application
     }
     internal void ClosePanel()
     {
+        _peek.Dismiss(); _previewPanel = false; _panelMotion?.Reset();
         if (_panel?.IsVisible == true) _panel.Hide();
         Controller.SetPanel(false); SaveSoon();
+        Render();
+    }
+    internal void Dock()
+    {
+        ClosePanel();
+        var d = CurrentDisplay();
+        Controller.Restore(new(MascotMode.Notch, d.Bounds.Center, d.Id), Displays);
+        SaveSoon(); Render();
+    }
+    internal void BeginNotchDrag(PointD press)
+    {
+        if (Controller.Mode != MascotMode.Notch) return;
+        ClosePanel(); _mascot?.BeginDragFromPanel(press);
     }
     internal void Walk() { Controller.Walk(CurrentDisplay()); SaveSoon(); Render(); }
     internal void Stay() { Controller.Stay(); SaveSoon(); Render(); }
@@ -249,6 +310,7 @@ public partial class App : Application
         menu.Items.Add("Pengaturan", null, (_, _) => OpenPanel(true));
         menu.Items.Add("Lirik & karaoke", null, (_, _) => OpenLyricsPanel());
         menu.Items.Add("Jalan-jalan", null, (_, _) => Walk());
+        menu.Items.Add("Jadi notch", null, (_, _) => Dock());
         menu.Items.Add(new Forms.ToolStripSeparator()); menu.Items.Add("Keluar", null, (_, _) => Quit());
         menu.Opening += (_, _) => Controller.SetPanel(true);
         menu.Closed += (_, _) => { if (!PanelVisible) Controller.SetPanel(false); };
@@ -264,7 +326,7 @@ public partial class App : Application
     internal void Quit(int exitCode)
     {
         if (Exiting) return;
-        Exiting = true; _tick?.Stop(); Controller.CancelDrag();
+        Exiting = true; _tick?.Stop(); _panelMotion?.Dispose(); Controller.CancelDrag();
         SaveNow(); Media.Changed -= MediaChanged; Media.Dispose();
         if (Karaoke is not null) { Karaoke.Changed -= KaraokeChanged; Karaoke.Dispose(); }
         _lyricsClient?.Dispose();

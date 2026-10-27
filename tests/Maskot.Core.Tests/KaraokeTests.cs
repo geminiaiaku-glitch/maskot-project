@@ -163,8 +163,8 @@ public sealed class KaraokeTests
     {
         var d = new DisplayArea("d", new(-1920, 0, 1920, 1080), new(-1920, 0, 1920, 1040), 1, 1035);
         var c = new MascotController(); c.Restore(new(MascotMode.Notch, new(-1000, 0), "d"), [d]);
-        c.SetLyricNotch(true, [d]); Assert.Equal((-1170d, 0d), (c.Position.X, c.Position.Y)); Assert.Equal((420d, 96d), c.Dimensions(1));
-        c.Press(c.Position + new PointD(20, 10)); c.SetLyricNotch(false, [d]); Assert.Equal(420, c.NotchWidth);
+        c.SetLyricNotch(true, [d]); Assert.Equal((-1140d, 0d), (c.Position.X, c.Position.Y)); Assert.Equal((360d, 44d), c.Dimensions(1));
+        c.Press(c.Position + new PointD(20, 10)); c.SetLyricNotch(false, [d]); Assert.Equal(360, c.NotchWidth);
         c.CancelDrag(); c.SetLyricNotch(false, [d]); Assert.Equal(230, c.NotchWidth);
     }
     [Fact] public void LyricBubbleIsClampedAndFlipsBelowTopEdge()
