@@ -21,7 +21,8 @@ Workflow `.github/workflows/windows.yml` menjalankan aplikasi terpublikasi melal
 `scripts/test-windows-ui.ps1`. Instance memakai direktori data sementara, mutex
 sendiri, media lokal tidak dibaca, dan renderer software untuk hasil yang konsisten.
 
-15 pemeriksaan mencakup:
+16 pemeriksaan mencakup (15 pemeriksaan pertama sudah lulus pada run yang ditautkan;
+pemeriksaan kontras tombol ditambahkan setelah pemeriksaan visual):
 
 - View termuat dan terlihat; hide fullscreen mati secara default.
 - HWND benar-benar berpindah saat berjalan, clock frame bertambah, **piksel frame
@@ -31,6 +32,7 @@ sendiri, media lokal tidak dibaca, dan renderer software untuk hasil yang konsis
 - Momo tetap terlihat dan berada lebih tinggi dalam Z-order daripada jendela uji
   fullscreen/topmost yang menutupi monitor.
 - Panel terbuka tanpa menghentikan animasi karakter. Empat tab dirender ke PNG.
+- Teks tombol utama pada latar putih memiliki rasio kontras setidaknya 4.5:1.
 - Docking menampilkan notch. Clock karakter berhenti saat view tersembunyi.
 
 Setiap run memakai folder unik. `result.json` harus menyatakan `passed: true` dan

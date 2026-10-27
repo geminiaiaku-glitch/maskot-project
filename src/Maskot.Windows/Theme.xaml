@@ -15,6 +15,9 @@
   <Setter Property="Cursor" Value="Hand" /><Setter Property="FontSize" Value="13" />
   <Setter Property="Template"><Setter.Value>
    <ControlTemplate TargetType="Button">
+    <ControlTemplate.Resources>
+     <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" /></Style>
+    </ControlTemplate.Resources>
     <Border x:Name="Body" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
      <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Border>
@@ -99,6 +102,18 @@
     </Track>
    </Grid>
    <ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value=".35" /></Trigger></ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style TargetType="ScrollBar">
+  <Setter Property="Width" Value="6" /><Setter Property="Background" Value="Transparent" />
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
+   <Grid Background="Transparent">
+    <Track x:Name="PART_Track" Orientation="{TemplateBinding Orientation}" IsDirectionReversed="True">
+     <Track.DecreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Focusable="False"><RepeatButton.Template><ControlTemplate><Border Background="Transparent" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
+     <Track.Thumb><Thumb MinHeight="25"><Thumb.Template><ControlTemplate><Border x:Name="Grip" Background="#48484F" CornerRadius="3" Margin="1,0" /><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Grip" Property="Background" Value="#73737D" /></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+     <Track.IncreaseRepeatButton><RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Focusable="False"><RepeatButton.Template><ControlTemplate><Border Background="Transparent" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
+    </Track>
+   </Grid>
   </ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style x:Key="Caption" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">

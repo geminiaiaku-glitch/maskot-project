@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Maskot.Windows.Platform;
@@ -75,6 +76,7 @@ internal static class WindowsSmoke
             {
                 panel.SelectTab(tab); app.RelayoutPanel(); await Task.Delay(120);
                 Capture((FrameworkElement)panel.Content, Path.Combine(output, "panel-" + new[] { "music", "focus", "space", "settings" }[tab] + ".png"));
+                if (tab == 1) Check("primary_button_text_has_contrast", HasReadablePrimaryText(panel.StartPause));
             }
             app.ClosePanel();
             app.Controller.Press(app.Controller.Position + new PointD(40, 40));
@@ -115,5 +117,23 @@ internal static class WindowsSmoke
         using (var file = File.Create(path)) encoder.Save(file);
         var pixels = new byte[width * height * 4]; bitmap.CopyPixels(pixels, width * 4, 0);
         return Convert.ToHexString(SHA256.HashData(pixels));
+    }
+    private static bool HasReadablePrimaryText(Button button)
+    {
+        static TextBlock? Text(DependencyObject node)
+        {
+            if (node is TextBlock text) return text;
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++)
+                if (Text(VisualTreeHelper.GetChild(node, i)) is { } child) return child;
+            return null;
+        }
+        static double Luminance(Color c)
+        {
+            static double Linear(byte channel) { var v = channel / 255d; return v <= .04045 ? v / 12.92 : Math.Pow((v + .055) / 1.055, 2.4); }
+            return .2126 * Linear(c.R) + .7152 * Linear(c.G) + .0722 * Linear(c.B);
+        }
+        if (Text(button)?.Foreground is not SolidColorBrush foreground || button.Background is not SolidColorBrush background) return false;
+        var a = Luminance(foreground.Color); var b = Luminance(background.Color);
+        return (Math.Max(a, b) + .05) / (Math.Min(a, b) + .05) >= 4.5;
     }
 }
