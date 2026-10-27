@@ -55,6 +55,10 @@ jobs:
         with:
           name: Maskot-win-x64
           path: artifacts/win-x64/
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/win-x64/test-results/
       - name: Package portable application
         run: |
           cd artifacts/win-x64

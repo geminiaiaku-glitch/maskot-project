@@ -24,8 +24,11 @@ terhadap metadata rilis Microsoft), tanpa desktop Windows/Wine.
 
 Workflow Windows pertama gagal dengan NU1004 karena `latestPatch` memilih SDK
 patch lain yang meminta ILLink 10.0.13, sedangkan lockfile memakai 10.0.0.
-`global.json` kini mengunci SDK 10.0.100 secara tepat. Hasil workflow setelah
-perbaikan harus diperiksa pada tab Actions; kegagalan ini bukan bukti bug UI.
+`global.json` kini mengunci SDK 10.0.100 secara tepat. [Workflow Windows setelah
+perbaikan](https://github.com/geminiaiaku-glitch/maskot-project/actions/runs/40436742889)
+berhasil: restore, tes core, publish dan pengemasan PowerShell selesai, menghasilkan
+artefak aplikasi serta hasil tes. Ini memverifikasi build pada Windows runner,
+belum pengujian interaksi desktop. Hasil TRX juga dimasukkan dalam paket rilis.
 
 Tes mencakup klik/jitter, offset drag, tidak memicu klik setelah drag, mode diam,
 docking hanya saat release, luar target, hysteresis, undock tanpa langsung redock,
@@ -45,7 +48,6 @@ membuktikan deteksi taskbar Windows bekerja. Tes media lokal tidak dijalankan.
 - GSMTC dengan Spotify/browser, kontrol yang ditolak pemutar, artwork/timeline,
   LRCLIB online/offline menggunakan aplikasi yang berjalan.
 - Multi-monitor/DPI dan sleep/resume perangkat Windows nyata; CPU/RAM UI.
-- `scripts/build-windows.ps1` dan workflow GitHub Actions pada mesin Windows.
 
 Semua skenario langsung dicatat pada [WINDOWS-ACCEPTANCE.md](WINDOWS-ACCEPTANCE.md).
 Build berhasil berarti compiler menerima kode dan paket Windows terbentuk;

@@ -8,8 +8,8 @@
   ketentuan komponennya. Lisensi: https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
   dan https://github.com/dotnet/wpf/blob/main/LICENSE.TXT.
   Windows SDK .NET targeting pack menyertakan projections/runtime WinRT dengan
-  ketentuan Microsoft di https://aka.ms/WinSDKLicenseURL; metadata paketnya juga
-  disertakan di folder notices pada paket portable.
+  ketentuan Microsoft di https://aka.ms/WinSDKLicenseURL. Metadata paketnya
+  mencantumkan tautan lisensi tersebut.
 - xUnit dan Microsoft.NET.Test.Sdk hanya untuk pengujian, tidak dimasukkan ke
   aplikasi akhir. Metadata dan hash paket ada di packages.lock.json.
 - LRCLIB (`https://lrclib.net`) adalah layanan lirik eksternal opsional. Aplikasi
