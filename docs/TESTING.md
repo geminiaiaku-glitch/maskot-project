@@ -17,6 +17,15 @@ terhadap metadata rilis Microsoft), tanpa desktop Windows/Wine.
 - `python3 scripts/package.py`: ZIP portable dibuat, CRC arsip diverifikasi,
   lisensi runtime disertakan, checksum SHA256 executable/ZIP ditulis. Identitas
   binary diperiksa sebagai PE32+ Windows GUI x86-64; ini bukan eksekusi UI.
+- `scripts/build-windows.ps1` juga dijalankan melalui PowerShell 7.5.4 di Linux:
+  restore terkunci, 32 tes, publish, pengemasan, dan checksum berhasil.
+- Paket di branch `downloads` telah diunduh ulang dari URL GitHub publik:
+  HTTP 200 `application/zip`, SHA256 sesuai, CRC ZIP valid, `Maskot.exe` tersedia.
+
+Workflow Windows pertama gagal dengan NU1004 karena `latestPatch` memilih SDK
+patch lain yang meminta ILLink 10.0.13, sedangkan lockfile memakai 10.0.0.
+`global.json` kini mengunci SDK 10.0.100 secara tepat. Hasil workflow setelah
+perbaikan harus diperiksa pada tab Actions; kegagalan ini bukan bukti bug UI.
 
 Tes mencakup klik/jitter, offset drag, tidak memicu klik setelah drag, mode diam,
 docking hanya saat release, luar target, hysteresis, undock tanpa langsung redock,

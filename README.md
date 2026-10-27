@@ -67,7 +67,7 @@ Login startup memakai hanya `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\
 ## Mengembangkan dan membangun
 
 Pasang [.NET SDK 10.0.100](https://dotnet.microsoft.com/download/dotnet/10.0)
-(versi dipin di global.json; patch 10.0.1xx yang kompatibel diperbolehkan).
+(versi dikunci tepat di global.json agar dependency lockfile konsisten di cloud dan CI).
 
 Di Windows, dari root proyek:
 
