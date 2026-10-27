@@ -84,10 +84,10 @@ public partial class MascotWindow : Window
         menu.Closed += (_, _) => { if (!Host.PanelVisible) Host.Controller.SetPanel(false); };
         ContextMenu = menu; menu.IsOpen = true; e.Handled = true;
     }
-    internal void UpdateAppearance()
+    internal void UpdateAppearance(KaraokeCue? currentCue = null)
     {
         var c = Host.Controller;
-        var cue = Host.Cue;
+        var cue = currentCue ?? Host.Cue;
         var notch = c.Mode == MascotMode.Notch;
         Notch.Visibility = notch ? Visibility.Visible : Visibility.Collapsed;
         Character.Visibility = notch ? Visibility.Collapsed : Visibility.Visible;

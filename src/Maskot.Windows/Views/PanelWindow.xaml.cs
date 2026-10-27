@@ -116,9 +116,10 @@ public partial class PanelWindow : Window
     internal void RefreshLyrics()
     {
         if (_initializing) return;
+        OnlineLyrics.IsChecked = Host.State.Preferences.LyricsEnabled;
+        if (!IsVisible || Tabs.SelectedIndex != 0 || LyricsPane.Visibility != Visibility.Visible) return;
         var cue = Host.Cue;
         var doc = Host.Karaoke.Document;
-        OnlineLyrics.IsChecked = Host.State.Preferences.LyricsEnabled;
         LyricText.Text = !Host.State.Preferences.LyricsEnabled || Host.ActiveMedia is null ? cue.Caption
             : doc.Availability == LyricsAvailability.Plain ? doc.Plain : cue.Current;
         LyricStatus.Text = cue.Caption;

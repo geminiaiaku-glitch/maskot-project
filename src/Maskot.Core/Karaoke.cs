@@ -78,16 +78,24 @@ public sealed record KaraokeCue(KaraokeMood Mood, string Current, string Next, s
         switch (document.Availability)
         {
             case LyricsAvailability.Synced:
-                var index = -1;
-                for (var i = 0; i < document.Lines.Count && document.Lines[i].At <= position; i++) index = i;
+                var index = LrcParser.CurrentIndex(document.Lines, position);
                 current = index >= 0 ? document.Lines[index].Text : "";
-                next = document.Lines.Skip(index + 1).FirstOrDefault(l => !string.IsNullOrWhiteSpace(l.Text))?.Text ?? "";
+                for (var i = index + 1; i < document.Lines.Count; i++)
+                {
+                    if (string.IsNullOrWhiteSpace(document.Lines[i].Text)) continue;
+                    next = document.Lines[i].Text; break;
+                }
                 caption = "Lirik tersinkron · LRCLIB";
                 mood = string.IsNullOrWhiteSpace(current) ? KaraokeMood.Listening : KaraokeMood.Singing;
                 if (string.IsNullOrWhiteSpace(current)) current = "♪";
                 break;
             case LyricsAvailability.Plain:
-                current = document.Plain.Split('\n').FirstOrDefault(l => !string.IsNullOrWhiteSpace(l))?.Trim() ?? "♪";
+                current = "♪";
+                foreach (var line in document.Plain.AsSpan().EnumerateLines())
+                {
+                    if (line.IsWhiteSpace()) continue;
+                    current = line.Trim().ToString(); break;
+                }
                 next = "Lirik tanpa sinkronisasi"; caption = "Lirik tersedia tanpa penanda waktu · LRCLIB"; mood = KaraokeMood.Singing;
                 break;
             case LyricsAvailability.Missing:
@@ -112,6 +120,7 @@ public static class PlaybackPosition
     {
         if (!double.IsFinite(rate) || rate <= 0) rate = 1;
         var seconds = Math.Max(0, sample.TotalSeconds + (playing ? Math.Max(0, elapsed.TotalSeconds) * rate : 0));
-        return TimeSpan.FromSeconds(duration > TimeSpan.Zero ? Math.Min(seconds, duration.TotalSeconds) : seconds);
+        if (duration > TimeSpan.Zero) seconds = Math.Min(seconds, duration.TotalSeconds);
+        return seconds >= TimeSpan.MaxValue.TotalSeconds ? TimeSpan.MaxValue : TimeSpan.FromSeconds(seconds);
     }
 }

@@ -24,6 +24,7 @@ internal static class WindowsSmoke
         }
         try
         {
+            await MediaServiceSmoke.RunAsync(Check);
             await Task.Delay(350);
             var mascot = app.MascotForDiagnostics;
             Check("character_loaded", mascot.Character.IsLoaded && mascot.Character.IsVisible);
@@ -49,7 +50,9 @@ internal static class WindowsSmoke
 
             app.State.Preferences.ExtraAnimations = false; app.ApplyPreferences(); await Task.Delay(80);
             var reducedA = Capture(mascot.Character, Path.Combine(output, "reduced-a.png"));
+            var reducedFrames = mascot.Character.FramesRendered;
             await Task.Delay(220);
+            Check("reduced_motion_stops_frame_timer", mascot.Character.FramesRendered == reducedFrames);
             var reducedB = Capture(mascot.Character, Path.Combine(output, "reduced-b.png"));
             Check("animation_setting_stops_extra_motion", reducedA == reducedB);
             app.State.Preferences.ExtraAnimations = true; app.ApplyPreferences();

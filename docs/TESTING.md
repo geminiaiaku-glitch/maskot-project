@@ -95,3 +95,22 @@ resume singing/confused, instrumental, loading, serta playback dengan lirik onli
 mati tanpa lookup. Lihat result.json dalam ZIP rilis untuk hasil native aktual;
 penerbitan digagalkan jika salah satu pemeriksaan gagal. Pemutar pengguna nyata
 tetap memerlukan pemeriksaan manual di perangkat pengguna.
+
+## Audit dan optimasi 0.3.2
+
+97 tes core lulus dengan SDK 10.0.114; cross-build WPF tanpa error/peringatan.
+Tambahan mencakup pencarian lirik bertimestamp sama/berukuran besar, batas waktu,
+backup ketika primary hilang, null pada data lama, autosave identik, normalisasi,
+pemulihan korupsi setelah save dan pelestarian backup setelah restart.
+
+Windows self-test menambah 11 pemeriksaan siklus media melalui adapter uji pada
+service produksi: timeline tidak memuat ulang metadata, callback lintas thread,
+pause selama artwork tertunda, penggabungan event, pergantian sumber, kegagalan
+sementara dan disposal/cancellation. Satu pemeriksaan memastikan frame clock
+berhenti ketika animasi tambahan mati. Total 52 pemeriksaan menjadi syarat rilis;
+hasil aktual tersimpan dalam windows-smoke/result.json di ZIP.
+
+NuGet advisory check dijalankan pada build Windows dan menyimpan dependency-audit.json.
+build-info.json merekam commit, SDK dan framework yang disertakan. Audit luas dan
+batas pengujian dijelaskan dalam AUDIT-0.3.2.md. Ini bukan hasil benchmark CPU/RAM
+atau pengujian seluruh pemutar/DPI/perangkat Windows pengguna.

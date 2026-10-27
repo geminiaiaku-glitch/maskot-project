@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Maskot.Core;
 
 public enum FocusPhase { Focus, Break }
@@ -45,7 +47,9 @@ public sealed class TaskItem
 public sealed class ShelfItem
 {
     public string Path { get; set; } = "";
+    [JsonIgnore]
     public string Name => System.IO.Path.GetFileName(Path.TrimEnd(System.IO.Path.DirectorySeparatorChar));
+    [JsonIgnore]
     public bool Exists => File.Exists(Path) || Directory.Exists(Path);
 }
 
@@ -74,6 +78,10 @@ public sealed class AppState
     public void Normalize()
     {
         Preferences ??= new(); Timer ??= new(); Tasks ??= []; Shelf ??= []; Notes ??= "";
+        Tasks.RemoveAll(task => task is null);
+        Shelf.RemoveAll(item => item is null);
+        foreach (var task in Tasks) task.Text ??= "";
+        foreach (var item in Shelf) item.Path ??= "";
         if (Preferences.BehaviorVersion < 2)
         {
             Preferences.HideInFullscreen = false;
@@ -84,7 +92,8 @@ public sealed class AppState
         Preferences.WalkSpeed = double.IsFinite(Preferences.WalkSpeed) ? Math.Clamp(Preferences.WalkSpeed, 10, 100) : 32;
         Timer.FocusMinutes = Math.Clamp(Timer.FocusMinutes, 1, 180);
         Timer.BreakMinutes = Math.Clamp(Timer.BreakMinutes, 1, 180);
-        if (!double.IsFinite(Timer.RemainingSeconds) || Timer.RemainingSeconds < 0) Timer.Reset();
+        if (!Enum.IsDefined(Timer.Phase)) { Timer.Phase = FocusPhase.Focus; Timer.Reset(); }
+        if (!double.IsFinite(Timer.RemainingSeconds) || Timer.RemainingSeconds < 0 || Timer.RemainingSeconds > 180 * 60) Timer.Reset();
         if (Placement is { } p && (!double.IsFinite(p.Position.X) || !double.IsFinite(p.Position.Y))) Placement = null;
     }
 }

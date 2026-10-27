@@ -104,12 +104,12 @@ public partial class App : Application
     private void MediaChanged()
     {
         if (Exiting || Dispatcher.HasShutdownStarted) return;
-        Dispatcher.BeginInvoke(() => { if (!Exiting) { RefreshKaraoke(); _panel?.RefreshMedia(); Render(); } });
+        Dispatcher.BeginInvoke(() => { if (!Exiting) { RefreshKaraoke(); if (PanelVisible) _panel?.RefreshMedia(); Render(); } });
     }
     private void KaraokeChanged()
     {
         if (Exiting || Dispatcher.HasShutdownStarted) return;
-        Dispatcher.BeginInvoke(() => { if (!Exiting) { _panel?.RefreshLyrics(); Render(); } });
+        Dispatcher.BeginInvoke(() => { if (!Exiting) { if (PanelVisible) _panel?.RefreshLyrics(); Render(); } });
     }
     internal void RefreshKaraoke(bool force = false)
     {
@@ -142,13 +142,13 @@ public partial class App : Application
             if (!hidden && !Controller.PanelOpen && _mascot is not null) Desktop.KeepAbove(_mascot);
             if (!hidden && !Controller.PanelOpen && _lyricBubble is not null) Desktop.KeepAbove(_lyricBubble);
             if (State.Timer.Advance(now)) { SaveNow(); Notify(State.Timer.Phase == FocusPhase.Break ? "Sesi fokus selesai. Saatnya beristirahat. Buka panel untuk memulai istirahat." : "Istirahat selesai. Mulai sesi fokus saat kamu siap."); }
-            _panel?.Tick(); _mascot?.UpdateAppearance();
+            _panel?.Tick();
         }
         if (_mascot?.IsVisible == true)
         {
             Controller.Tick(delta, SmokeMode ? new(-99999, -99999) : Desktop.Cursor, Displays); Render();
         }
-        _panel?.RefreshLyrics();
+        if (PanelVisible) _panel?.RefreshLyrics();
         if (_saveAt is { } due && now >= due || elapsed - _lastSave >= 15) SaveNow();
         var interval = Controller.PointerHeld || Controller.Mode == MascotMode.Walking && !Controller.PanelOpen && _mascot?.IsVisible == true ? 40 : ActiveMedia?.Playing == true && State.Preferences.LyricsEnabled ? 100 : 200;
         if (_tick is not null && _tick.Interval.TotalMilliseconds != interval) _tick.Interval = TimeSpan.FromMilliseconds(interval);
@@ -169,7 +169,7 @@ public partial class App : Application
         var cue = Cue;
         Controller.SetLyricNotch(cue.ExpandedNotch, Displays);
         var d = CurrentDisplay(); var (w, h) = Controller.Dimensions(d.Scale);
-        _mascot.UpdateAppearance(); Desktop.Position(_mascot, Controller.Position, w, h);
+        _mascot.UpdateAppearance(cue); Desktop.Position(_mascot, Controller.Position, w, h);
         if (Controller.Dragging && Controller.DockNearby && Controller.DragDisplay is { } dragDisplay)
             _hint?.Update(dragDisplay, Controller.DockEligible);
         else _hint?.Hide();
@@ -268,7 +268,7 @@ public partial class App : Application
         SaveNow(); Media.Changed -= MediaChanged; Media.Dispose();
         if (Karaoke is not null) { Karaoke.Changed -= KaraokeChanged; Karaoke.Dispose(); }
         _lyricsClient?.Dispose();
-        if (_tray is not null) { _tray.Visible = false; _tray.Dispose(); }
+        if (_tray is not null) { _tray.Visible = false; _tray.ContextMenuStrip?.Dispose(); _tray.Dispose(); }
         _icon?.Dispose();
         _panel?.Close(); _hint?.Close(); _lyricBubble?.Close(); _mascot?.Close();
         _instance?.Dispose(); Shutdown(exitCode);

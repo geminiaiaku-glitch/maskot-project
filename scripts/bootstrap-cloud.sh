@@ -2,9 +2,10 @@
 set -euo pipefail
 # Install the pinned official SDK outside the checkout. Verify SHA512 before extraction.
 setup_root=/workspace/.tools
-sdk_version=10.0.100
+project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+sdk_version="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["sdk"]["version"])' "$project_dir/global.json")"
 mkdir -p "$setup_root/dotnet" "$setup_root/downloads"
-if [ ! -x "$setup_root/dotnet/dotnet" ] || ! "$setup_root/dotnet/dotnet" --list-sdks | rg -q '^10\.0\.100 '; then
+if [ ! -x "$setup_root/dotnet/dotnet" ] || ! "$setup_root/dotnet/dotnet" --list-sdks | awk '{print $1}' | rg -Fxq "$sdk_version"; then
   curl --fail --silent --show-error --location \
     "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json" \
     -o "$setup_root/downloads/releases-10.0.json"
@@ -23,9 +24,11 @@ with archive.open('rb') as stream:
     for chunk in iter(lambda:stream.read(1024*1024),b''): digest.update(chunk)
 if digest.hexdigest().lower()!=item['hash'].lower():
     archive.unlink(); raise SystemExit('SDK SHA512 mismatch; archive discarded')
+# Replacing the path keeps an existing compiler process's executable inode alive.
+host=root/'dotnet'/'dotnet'
+if host.exists(): host.replace(root/'dotnet'/'dotnet.previous-host')
 with tarfile.open(archive) as package: package.extractall(root/'dotnet',filter='tar')
 print('Official .NET SDK verified and installed:',version)
 PY
 fi
-project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 bash "$project_dir/scripts/dev.sh" restore

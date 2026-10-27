@@ -83,6 +83,83 @@ public sealed class ProductivityTests
             state.Shelf.Clear(); store.Save(state); Assert.Equal("keep me", File.ReadAllText(original));
         });
     }
+    [Fact] public void MissingPrimaryRecoversExistingBackup()
+    {
+        WithStore((store, _) =>
+        {
+            store.Save(new() { Notes = "backup notes", Tasks = [new() { Text = "keep task" }] });
+            store.Save(new() { Notes = "later" });
+            File.Delete(store.FilePath);
+            var recovered = store.Load();
+            Assert.Equal("backup notes", recovered.Notes); Assert.Equal("keep task", recovered.Tasks.Single().Text);
+            Assert.NotNull(store.RecoveryNotice);
+            store.Save(recovered); Assert.Equal("backup notes", store.Load().Notes);
+        });
+    }
+    [Fact] public void RepeatedAutosaveKeepsPreviousDistinctBackup()
+    {
+        WithStore((store, _) =>
+        {
+            var state = new AppState { Notes = "previous" }; store.Save(state);
+            state.Notes = "current"; store.Save(state);
+            var actualWrite = File.GetLastWriteTimeUtc(store.FilePath);
+            store.Save(state);
+            Assert.Equal(actualWrite, File.GetLastWriteTimeUtc(store.FilePath));
+            Assert.Contains("previous", File.ReadAllText(store.FilePath + ".bak"));
+            File.Delete(store.FilePath); store.Save(state);
+            Assert.Equal("current", store.Load().Notes);
+        });
+    }
+    [Fact] public void UnchangedAutosaveRepairsExternallyCorruptedPrimary()
+    {
+        WithStore((store, path) =>
+        {
+            var state = new AppState { Notes = "safe" }; store.Save(state);
+            File.WriteAllText(store.FilePath, "{broken");
+            store.Save(state);
+            Assert.Equal("safe", store.Load().Notes);
+            Assert.Single(Directory.GetFiles(path, "*.corrupt-*"));
+        });
+    }
+    [Fact] public void RestartAutosavePreservesPreviousDistinctBackup()
+    {
+        WithStore((store, path) =>
+        {
+            var state = new AppState { Notes = "previous" }; state.Normalize(); store.Save(state);
+            state.Notes = "current"; store.Save(state);
+            var restarted = new StateStore(path); var loaded = restarted.Load(); restarted.Save(loaded);
+            Assert.Contains("previous", File.ReadAllText(store.FilePath + ".bak"));
+        });
+    }
+    [Fact] public void NullCollectionEntriesAndFieldsDoNotDiscardValidData()
+    {
+        WithStore((store, _) =>
+        {
+            File.WriteAllText(store.FilePath, """
+                {"Notes":"keep notes","Tasks":[null,{"Text":"keep task"},{"Text":null}],
+                 "Shelf":[null,{"Path":"keep original.txt"},{"Path":null}]}
+                """);
+            var state = store.Load();
+            Assert.Null(store.RecoveryNotice); Assert.Equal("keep notes", state.Notes);
+            Assert.Equal(new[] { "keep task", "" }, state.Tasks.Select(t => t.Text));
+            Assert.Equal(new[] { "keep original.txt", "" }, state.Shelf.Select(f => f.Path));
+            store.Save(state);
+            using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(store.FilePath));
+            var shelf = json.RootElement.GetProperty("Shelf")[0];
+            Assert.False(shelf.TryGetProperty("Exists", out var exists)); Assert.False(shelf.TryGetProperty("Name", out var name));
+            Assert.Equal(2, store.Load().Shelf.Count);
+        });
+    }
+    [Fact] public void InvalidTimerStateCannotOverflowUiOrStartDeadline()
+    {
+        var state = new AppState(); state.Timer.Phase = (FocusPhase)123;
+        state.Timer.DeadlineUtc = Now.AddDays(1); state.Timer.RemainingSeconds = double.MaxValue;
+        state.Normalize();
+        Assert.Equal(FocusPhase.Focus, state.Timer.Phase); Assert.False(state.Timer.Running);
+        Assert.Equal(1500, state.Timer.RemainingSeconds);
+        state.Timer.RemainingSeconds = 1e20; state.Normalize(); state.Timer.Start(Now);
+        Assert.Equal(Now.AddMinutes(25), state.Timer.DeadlineUtc);
+    }
     private static void WithStore(Action<StateStore, string> action)
     {
         var dir = Path.Combine(Path.GetTempPath(), "maskot-tests-" + Guid.NewGuid()); Directory.CreateDirectory(dir);

@@ -29,6 +29,18 @@ public static partial class LrcParser
         }
         return lines.OrderBy(l => l.At).ToArray();
     }
+    // LRC lines are sorted; use an upper bound so duplicate timestamps select the last line.
+    public static int CurrentIndex(IReadOnlyList<LyricLine> lines, TimeSpan position)
+    {
+        var low = 0; var high = lines.Count;
+        while (low < high)
+        {
+            var middle = low + (high - low) / 2;
+            if (lines[middle].At <= position) low = middle + 1;
+            else high = middle;
+        }
+        return low - 1;
+    }
     public static string Current(IReadOnlyList<LyricLine> lines, TimeSpan position) =>
-        lines.LastOrDefault(l => l.At <= position)?.Text ?? "";
+        CurrentIndex(lines, position) is var index && index >= 0 ? lines[index].Text : "";
 }

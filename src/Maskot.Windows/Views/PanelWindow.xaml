@@ -119,7 +119,7 @@
        <TextBlock Text="Jika diaktifkan, judul lagu, artis, dan durasi dikirim ke lrclib.net lewat HTTPS. Tanpa akun atau API key. Tidak ada telemetry." Style="{StaticResource Caption}" />
        <Border Background="#151518" CornerRadius="12" Padding="13" Margin="0,20,0,15"><TextBlock Text="Seret Momo ke tengah atas monitor, lalu lepaskan untuk menjadi notch. Tarik notch ke bawah untuk mengembalikannya. Escape membatalkan drag." Style="{StaticResource Caption}" /></Border>
        <Button Content="Keluar sepenuhnya" HorizontalAlignment="Left" Click="QuitClicked" />
-       <TextBlock Text="Maskot 0.3.1 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
+       <TextBlock Text="Maskot 0.3.2 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
       </StackPanel>
      </ScrollViewer>
     </TabItem>

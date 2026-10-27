@@ -28,8 +28,9 @@ public partial class ActivityBars : UserControl
     }
     private void Draw()
     {
-        var bars = new[] { A, B, C, D }; var t = _clock.Elapsed.TotalSeconds;
-        for (var i = 0; i < bars.Length; i++) bars[i].Height = IsActive ? 4 + (Math.Sin(t * (5 + i) + i * 1.7) + 1) * 5.5 : 3;
+        var t = _clock.Elapsed.TotalSeconds;
+        double HeightAt(int i) => IsActive ? 4 + (Math.Sin(t * (5 + i) + i * 1.7) + 1) * 5.5 : 3;
+        A.Height = HeightAt(0); B.Height = HeightAt(1); C.Height = HeightAt(2); D.Height = HeightAt(3);
         Opacity = IsActive ? 1 : .35;
     }
 }

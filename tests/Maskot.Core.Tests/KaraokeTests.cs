@@ -173,6 +173,39 @@ public sealed class KaraokeTests
         var p = DesktopGeometry.PlaceLyrics(new(-1900, 3, 112, 142), work, 308, 106);
         Assert.Equal(-1920, p.X); Assert.True(p.Y >= 145); Assert.True(p.X + 308 <= work.Right);
     }
+    [Fact] public void DuplicateTimestampsAndBlankGapsKeepExistingSelectionSemantics()
+    {
+        var doc = LyricsDocument.FromText("[00:01]first\n[00:01]last\n[00:02]\n[00:03]next", null);
+        var before = KaraokeCue.Create(doc, true, true, TimeSpan.Zero, true);
+        Assert.Equal("♪", before.Current); Assert.Equal("first", before.Next);
+        var exact = KaraokeCue.Create(doc, true, true, TimeSpan.FromSeconds(1), true);
+        Assert.Equal("last", exact.Current); Assert.Equal("next", exact.Next);
+        Assert.Equal("last", LrcParser.Current(doc.Lines, TimeSpan.FromSeconds(1)));
+        var gap = KaraokeCue.Create(doc, true, true, TimeSpan.FromSeconds(2), true);
+        Assert.Equal("♪", gap.Current); Assert.False(gap.ShowBubble); Assert.Equal("next", gap.Next);
+    }
+    [Fact] public void PlainLyricsSkipWhitespaceAndTrimCrLf()
+    {
+        var doc = LyricsDocument.FromText(null, "  \r\n\t\r\n  first line  \r\nsecond line");
+        Assert.Equal("first line", KaraokeCue.Create(doc, true, true, TimeSpan.Zero, true).Current);
+    }
+    [Fact] public void ExtremePlaybackRateCannotOverflowTimeline()
+    {
+        Assert.Equal(TimeSpan.MaxValue, PlaybackPosition.Estimate(TimeSpan.FromSeconds(1), TimeSpan.Zero, TimeSpan.FromSeconds(10), true, double.MaxValue));
+        Assert.Equal(TimeSpan.FromSeconds(60), PlaybackPosition.Estimate(TimeSpan.Zero, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(10), true, double.MaxValue));
+    }
+    [Fact] public async Task DisposingCancelsPendingLookupAndRejectsLateCompletion()
+    {
+        var result = new TaskCompletionSource<LyricsDocument>(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken token = default;
+        var source = new Source { Handler = (_, cancellation) => { token = cancellation; return result.Task; } };
+        var session = new KaraokeSession(source); session.Update(Song, true); var pending = session.Pending;
+        var changes = 0; session.Changed += () => changes++;
+        session.Dispose(); Assert.True(token.IsCancellationRequested);
+        result.SetResult(Synced); await pending;
+        session.Update(Song, true, true);
+        Assert.Equal(0, changes); Assert.Equal(1, source.Calls);
+    }
     private static KaraokeCue Cue(double seconds) => KaraokeCue.Create(Synced, true, true, TimeSpan.FromSeconds(seconds), true);
     private sealed class Source : ILyricsSource
     {

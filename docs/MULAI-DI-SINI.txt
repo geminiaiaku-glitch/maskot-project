@@ -1,4 +1,4 @@
-MASKOT / MOMO — VERSI PERCOBAAN 0.3.1
+MASKOT / MOMO — VERSI PERCOBAAN 0.3.2
 
 Untuk Windows 11 64-bit.
 
@@ -44,3 +44,6 @@ gestur bingung tanpa tulisan. Mic hanya muncul saat musik diputar, termasuk bila
 lirik online dimatikan. Saat jeda/berhenti, mic ikut hilang.
 Tidak ada rekaman mikrofon atau suara tambahan.
 Teks tanpa timestamp diberi label tanpa sinkronisasi.
+
+Versi 0.3.2 mengurangi pekerjaan berulang saat musik berjalan dan memperkuat
+pemulihan data cadangan. Runtime .NET diperbarui ke 10.0.14.
