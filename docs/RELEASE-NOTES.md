@@ -1,21 +1,23 @@
-**Maskot / Momo 0.4 — notch interaktif mengikuti video referensi** untuk Windows x64.
+**Momo 0.5 — notifikasi Windows lewat Momo** untuk Windows x64.
 
-- Hover notch untuk membuka panel; jauhkan kursor untuk kembali ringkas.
-- Panel menyatu dengan tepi atas layar, dengan transisi ukuran dan konten.
-- Navigasi carousel memakai panah, ikon dan indikator halaman; Ctrl+←/→ tersedia.
-- Musik ringkas dengan cover/progres/kontrol; ikon lirik membuka dua kolom
-  berisi baris sebelumnya, aktif dan berikutnya pada latar biru gelap.
-- Lirik compact menjadi satu baris. Catatan, tugas, shelf, timer dan setelan tetap
-  tersedia; editor/seek/dropdown tidak terganggu penutupan hover otomatis.
-- Preview tidak mengambil fokus keyboard. ×/Escape menutup tanpa reopen langsung.
-- Seret header notch turun untuk kembali menjadi Momo; Escape membatalkan drag.
-- Opsi animasi mati tetap dihormati. Semua aset/implementasi dibuat untuk proyek ini.
+Notifikasi baru dari Pusat Notifikasi Windows dapat muncul dalam kartu di dekat
+Momo atau notch. Fitur dimatikan secara default dan memerlukan izin Windows.
+Ada Jeda, contoh tampilan, mask judul/isi dan riwayat sesi sementara. Kartu tidak
+mengambil fokus; isi tidak ditulis ke disk/dikirim ke internet. Popup keamanan
+Windows dan pop-up internal aplikasi tidak dibaca. Notifikasi asli tetap ada.
 
-**Mulai:** klik kanan Momo → **Jadi notch**, lalu dekatkan kursor.
-Untuk update: Keluar dari Momo lama, ekstrak ZIP baru, jalankan Maskot.exe.
-Untuk lirik online: klik kanan → Lirik & karaoke → Aktifkan lirik online.
+**Pilih Maskot-Notifikasi-Setup.zip untuk akses notifikasi.** Ekstrak seluruhnya,
+keluar dari Momo lama dan buka Pasang-Momo.exe. Installer menjelaskan sertifikat
+penerbit pengembangan dan meminta persetujuan/UAC. Sertifikat leaf hanya dipasang
+ke TrustedPeople; private key tidak dibagikan. Setelah terpasang: klik kanan Momo
+→ Notifikasi Windows → Aktifkan → izinkan pada Windows. Tidak ada izin yang
+diaktifkan otomatis. Paket portable hanya dapat mencoba tampilan kartu.
 
-106 tes core dan build WPF diperiksa di cloud; rilis juga mensyaratkan 71
-pemeriksaan native Windows. JSON/PNG/TRX, build-info dan dependency-audit ada di ZIP.
-Pengujian memakai lirik orisinal dan adapter media uji. Seluruh pemutar, monitor/DPI,
-input manual dan fullscreen eksklusif tetap perlu dicoba di perangkat pengguna.
+Program berada di LocalAppData\Programs\Momo; catatan/tugas tetap di folder data
+Maskot. Windows dapat menolak akses lewat kebijakan perangkat. Momo harus berjalan;
+notifikasi lama/masa lock atau busy tidak diputar ulang setelah resume.
+
+117 tes core dan build WPF lulus di Linux. Publikasi juga mensyaratkan 98 cek native
+Windows, signature/identity installation dan panggilan API status akses. Pengiriman
+notifikasi nyata dengan izin pengguna masih perlu dicoba pada perangkat Windows 11.
+Lihat PASANG-NOTIFIKASI.txt dan TESTING.md untuk rincian serta batas pengujian.

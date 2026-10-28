@@ -27,7 +27,7 @@ Momo. Menutup kartu Momo tidak menghapus notifikasi asli Windows.
 Versi portable dapat mencoba tampilan kartu, tetapi akses notifikasi aplikasi
 memerlukan identitas paket terpasang. Momo harus sedang berjalan.
 
-Untuk mencopot: keluar dari Momo, buka Pengaturan Windows → Aplikasi → Momo →
+Untuk mencopot: matikan Jalankan saat login, keluar dari Momo, buka Pengaturan Windows → Aplikasi → Momo →
 Copot pemasangan. Paket identitas dihapus; folder program eksternal dapat dihapus
 setelahnya. Jangan hapus folder data Maskot jika ingin menyimpan catatan/tugas.
 Sertifikat penerbit preview dapat dihapus melalui certlm.msc → Trusted People

@@ -78,3 +78,13 @@ Ctrl+←/→ tanpa mengganggu editor, toggle lirik, pilih sumber melalui popup, 
 serta edit catatan. Tutup dengan ×/Escape dan pastikan tidak langsung reopen.
 Seret header turun untuk undock, lalu Escape untuk membatalkan. Ulangi pada DPI
 100%, 150%, 200%, monitor kecil, fullscreen, dan opsi animasi mati.
+
+Tambahan 0.5: keluar dari versi lama dan pasang paket melalui Pasang-Momo.exe.
+Periksa nama/fingerprint penerbit, UAC dan identitas aplikasi. Data catatan/tugas
+lama harus tetap ada. Aktifkan notifikasi dan terima/tolak/cabut akses melalui
+Windows; coba toast nyata dari browser/aplikasi pesan. Cek baseline tanpa replay,
+mask isi, Jeda, history lokal, popup Momo/notch, fokus keyboard, lock/unlock,
+status busy/fullscreen dan burst. Tutup kartu Momo tidak boleh menghapus Windows
+notification. Isi tidak boleh ada di state.json, log atau jaringan. Jika menghapus
+aplikasi, matikan Jalankan saat login dan periksa folder program/certificate sesuai
+petunjuk, sambil mempertahankan data pribadi.

@@ -67,3 +67,27 @@ Panel mengembang terpusat pada tepi atas dengan sudut bawah 26; di dekat Momo se
 sudut dibulatkan. WindowMotion berhenti setelah180 ms atau saat panel ditutup.
 NotchPeek di Core menguji hover intent, leave grace, editor dan suppression setelah
 close. Mode/data tetap dikelola App/Core. Tidak mengimpor kode/aset/lirik dari video.
+
+## Notifikasi Windows 0.5
+
+WindowsNotificationSource memakai UserNotificationListener dengan capability
+uap3:userNotificationListener. Identitas eksternal MSIX dan embedded msix manifest
+mengikuti panduan Microsoft; tidak mengubah runtime Win32 atau memindah data lama.
+Paket identitas ditandatangani sertifikat leaf pengembangan (code-signing), hanya
+sertifikat publik dibagikan. Installer net48 memeriksa SHA256 executable/MSIX/CER,
+meminta persetujuan, mengimpor leaf ke LocalMachine TrustedPeople melalui UAC,
+kemudian mendaftarkan identitas untuk pengguna asal. Tidak memakai ExecutionPolicy
+Bypass, Developer Mode, private key publik, atau perubahan izin notifikasi otomatis.
+
+NotificationFeed menyimpan baseline/dedup,30 recent/10 pending, kartu 8 detik dan hold
+saat hover/drag/menu. Semua isi berada di RAM. Polling 1.5 detik hanya ketika akses
+Allowed dan tidak sedang lock/quiet; hasil async basi tidak boleh publish setelah
+disable/dispose/cabut izin. Pada resume, snapshot pertama jadi baseline tanpa replay.
+Renderer380×182DIP dibatasi work area, tanpa aktivasi. Notification card mendahului
+balon lirik; mic tetap mengikuti playback. History projection/cache dan teks WPF
+dihapus saat panel/card disembunyikan atau akses dicabut. UIMask menyembunyikan
+judul/isi di kartu dan riwayat. Tutup kartu/bersihkan history tidak menghapus toast
+Windows. Tidak ada aksi otomatis pada link/isi notifikasi.
+
+Referensi: https://learn.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/notification-listener
+https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/grant-identity-to-nonpackaged-apps

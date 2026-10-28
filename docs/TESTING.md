@@ -125,3 +125,24 @@ catatan, lirik dua kolom, leave/reopen, reduced motion dan header drag/Escape.
 PNG notch-carousel-* serta result.json dalam paket adalah hasil run native aktual;
 penerbitan mensyaratkan seluruh pemeriksaan lulus. Pemutar pengguna nyata, mixed DPI,
 klik manual/dropdown dan fullscreen eksklusif tetap memerlukan uji perangkat nyata.
+
+## Notifikasi 0.5
+
+117 tes core lulus di Linux, termasuk 11 regresi baseline, dedup/IDreuse, antrean,
+expiry/hold, batas memory/text, suppression/resume, localclear, self-source dan
+reset. Cross-build WPF tanpa error/peringatan. Windows self-test menambah 16 cek
+listener melalui source uji dan 11 cek kartu/App (total 98 di atas 71 sebelumnya).
+Skenario mencakup consent, polling coalescing, cancel/revoke, quiet/backlog,
+UI mask/focus/geometry, history, clear hidden text dan preview tanpa Windows access.
+
+Pipeline juga membangun identitas MSIX, memverifikasi signature dan compiler
+installer net48, memasang identitas ke external location lalu menjalankan suite
+kembali. notification-platform.json harus membuktikan Package.Current tersedia,
+RequiresInstallation=false dan API GetAccessStatus dapat dipanggil tanpa meminta
+akses pengguna. Publikasi digagalkan jika gate tersebut gagal.
+
+Ini menguji identity/API dan fixture; dialog izin serta pengiriman toast nyata dari
+berbagai aplikasi pada Windows 11 pengguna tetap perlu dicoba manual. Tidak ada
+teks notifikasi nyata di log/screenshot/laporan. Probe hanya menyimpan metadata
+package dan status akses. Sertifikat/private key preview dibuat di runner; key
+tidak ikut artefak atau ZIP.

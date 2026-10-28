@@ -40,6 +40,10 @@ try {
     Import-Certificate -FilePath "$stage/Momo-Preview.cer" -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
     & $signtool verify /pa /v "$stage/Momo-Identity.msix"
     if ($LASTEXITCODE -ne 0) { throw 'Package signature verification failed.' }
+    & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint /s My "$stage/Application/Maskot.exe"
+    if ($LASTEXITCODE -ne 0) { throw 'Application signing failed.' }
+    & $signtool verify /pa /v "$stage/Application/Maskot.exe"
+    if ($LASTEXITCODE -ne 0) { throw 'Application signature verification failed.' }
     $certificateHash = (Get-FileHash "$stage/Momo-Preview.cer" -Algorithm SHA256).Hash.ToLowerInvariant()
     $packageHash = (Get-FileHash "$stage/Momo-Identity.msix" -Algorithm SHA256).Hash.ToLowerInvariant()
     $applicationHash = (Get-FileHash "$stage/Application/Maskot.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -59,6 +63,10 @@ internal static class InstallerData {
     $compilerOutput = & $dotnet $compiler /nologo /noconfig /nostdlib+ /target:winexe /utf8output @referenceArgs /out:"$stage/Pasang-Momo.exe" packaging/notifications/Installer.cs artifacts/InstallerData.cs 2>&1
     $compilerOutput | Write-Output
     if ($LASTEXITCODE -ne 0) { throw ('Installer compilation failed: ' + ($compilerOutput -join "`n")) }
+    & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint /s My "$stage/Pasang-Momo.exe"
+    if ($LASTEXITCODE -ne 0) { throw 'Installer signing failed.' }
+    & $signtool verify /pa /v "$stage/Pasang-Momo.exe"
+    if ($LASTEXITCODE -ne 0) { throw 'Installer signature verification failed.' }
     Copy-Item docs/PASANG-NOTIFIKASI.txt "$stage/MULAI-DI-SINI.txt"
     @{ identity='MomoProject.MomoNotifications'; version='0.5.0.0'; publisher=$cert.Subject; certificateThumbprint=$cert.Thumbprint; certificateSha256=$certificateHash; msixSha256=$packageHash; applicationSha256=$applicationHash; privateKeyIncluded=$false } | ConvertTo-Json | Set-Content -Encoding utf8 "$stage/package-info.json"
     Compress-Archive -Path "$stage/*" -DestinationPath artifacts/Maskot-Notifikasi-Setup.zip -Force

@@ -222,9 +222,11 @@ internal sealed class WindowsNotificationSource : INotificationSource
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var source = item.AppInfo.AppUserModelId;
+                var app = item.AppInfo;
+                var source = app?.AppUserModelId ?? "windows.unknown";
                 if (string.Equals(source, OwnSourceId, StringComparison.OrdinalIgnoreCase)) continue;
-                var name = item.AppInfo.DisplayInfo.DisplayName;
+                var name = "Windows";
+                try { name = app?.DisplayInfo.DisplayName ?? name; } catch { }
                 var visual = item.Notification.Visual;
                 var binding = visual.GetBinding(KnownNotificationBindings.ToastGeneric) ?? visual.Bindings.FirstOrDefault();
                 var text = binding?.GetTextElements().Select(element => element.Text).Where(value => !string.IsNullOrWhiteSpace(value)).ToArray() ?? [];

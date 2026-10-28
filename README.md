@@ -13,16 +13,19 @@ Windows 10 belum diuji. Build ARM64 belum disediakan.
 
 1. Jika versi lama sedang berjalan, klik kanan Momo atau ikon Momo di dekat jam Windows,
    lalu pilih **Keluar**.
-2. [Unduh **Maskot 0.4 — Maskot-win-x64.zip**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.4.0-preview.2/Maskot-win-x64.zip).
-   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.4.0-preview.2).
+2. [Unduh **Momo 0.5 — paket notifikasi Windows**](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.5.0-preview.1/Maskot-Notifikasi-Setup.zip).
+   [Halaman rilis](https://github.com/geminiaiaku-glitch/maskot-project/releases/tag/v0.5.0-preview.1).
    Untuk build lokal, paket ada di `artifacts/Maskot-win-x64.zip`.
-3. Ekstrak ke folder tetap milikmu, lalu jalankan **Maskot.exe**. Paket self-contained
-   sudah membawa runtime .NET; tidak perlu memasang .NET untuk menjalankannya.
+3. Ekstrak seluruh ZIP dan buka **Pasang-Momo.exe**. Baca penerbit/sertifikat dan
+   ikuti pemasangan, lalu pilih **Buka Momo**. Runtime .NET sudah dibundel.
 4. Momo muncul di bawah layar. Klik tubuhnya untuk membuka panel; klik kanan untuk
    Jalan-jalan, Diam di sini, Pengaturan, atau Keluar.
 
-Build pengembangan belum ditandatangani. Ini bukan installer dan tidak menambahkan
-startup, layanan, atau aturan firewall. Jika kamu memilih jalankan saat login,
+Paket preview notifikasi ditandatangani dengan sertifikat pengembangan, bukan
+sertifikat komersial. [Petunjuk lengkap](docs/PASANG-NOTIFIKASI.txt) menjelaskan
+persetujuan dan sertifikat. Versi [portable](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.5.0-preview.1/Maskot-win-x64.zip)
+tersedia untuk fitur lain dan contoh kartu, tanpa akses notifikasi Windows.
+Startup tetap opsional; jika kamu memilih jalankan saat login,
 biarkan executable di lokasi tetap dan nonaktifkan opsi itu sebelum memindahkannya.
 
 **Interaksi:** seret tubuh Momo ke tengah atas monitor. Penanda muncul saat dekat,
@@ -63,6 +66,18 @@ selama tidak mengedit teks. Ikon lirik membuka tampilan dua kolom. Jauhkan kurso
 untuk menutup preview, atau tutup dengan ×/Escape. Drag bagian judul notch ke
 bawah untuk kembali menjadi Momo. Detail visual mengikuti video referensi pengguna.
 
+**Baru di 0.5 — notifikasi Windows:** Momo dapat membawa notifikasi aplikasi dalam
+kartu di dekat maskot atau notch, setelah kamu mengizinkan akses Windows. Untuk
+fitur ini, gunakan **[paket pemasangan notifikasi](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.5.0-preview.1/Maskot-Notifikasi-Setup.zip)**
+dan baca [petunjuk pemasangan](docs/PASANG-NOTIFIKASI.txt). Versi portable hanya
+menyediakan contoh tampilan kartu. Paket preview memakai sertifikat penerbit
+pengembangan; installer menjelaskan dan meminta persetujuan sebelum menambahnya.
+
+Klik kanan Momo → **Notifikasi Windows** → **Aktifkan**, lalu izinkan di Windows.
+Ada Jeda, contoh tampilan, opsi menyembunyikan judul/isi, dan riwayat sesi dalam
+RAM (maksimal 30). Notifikasi asli tidak dihapus. Saat PC terkunci/status Shell
+sibuk, presentasi dan polling dijeda; setelahnya memakai baseline baru.
+
 ## Fitur
 
 - **Maskot:** transparan, tanpa title bar; animasi idle, jalan, diangkat, tidur dan
@@ -73,6 +88,7 @@ bawah untuk kembali menjadi Momo. Detail visual mengikuti video referensi penggu
 - **Lirik:** opt-in di Setelan. Mengirim judul, artis, dan durasi via HTTPS ke
   [LRCLIB](https://lrclib.net). LRC disinkronkan dengan posisi media; lirik biasa,
   lagu tanpa lirik, offline, timeout, dan pembatalan ditangani terpisah dari musik.
+- **Notifikasi:** UserNotificationListener opt-in, toast Pusat Notifikasi Windows, dedup/antrean, kartu pasif, baseline tanpa replay, izin dapat dicabut. Tidak termasuk pop-up internal aplikasi atau dialog keamanan.
 - **Pomodoro:** fokus/istirahat 1–180 menit, mulai/jeda/lanjut/reset. Deadline UTC
   mempertahankan waktu saat panel ditutup, mode berubah, restart atau komputer
   tidur. Sesi selesai sekali, lalu fase berikutnya menunggu tombol Mulai.
@@ -98,7 +114,8 @@ Jika keduanya rusak/hilang, aplikasi mulai dengan data kosong dan memberi tahu.
 Data ini mencakup catatan dan path file shelf, dan **tidak dienkripsi**.
 
 Tidak ada telemetry, AI, cloud sync, atau kebutuhan API key. Tidak ada koneksi
-jaringan aplikasi saat lirik online mati. Artwork dan metadata diambil dari sesi
+jaringan aplikasi saat lirik online mati. Isi notifikasi hanya diproses dalam RAM,
+tidak disimpan ke disk atau dikirim ke layanan lain. Artwork dan metadata diambil dari sesi
 media lokal Windows. Log kesalahan lokal: `%LOCALAPPDATA%\Maskot\errors.log`.
 Login startup memakai hanya `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Maskot`.
 
