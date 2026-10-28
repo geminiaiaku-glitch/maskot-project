@@ -39,6 +39,7 @@ public partial class App : Application
     internal int FixtureLyricsRequests => _fixtureLyrics?.Requests ?? 0;
     internal bool Exiting { get; private set; }
     internal bool PanelVisible => _panel?.IsVisible == true;
+    private bool NotificationSettingsVisible => PanelVisible && _panel?.Tabs.SelectedIndex == 3;
     internal MascotWindow MascotForDiagnostics => _mascot!;
     internal PanelWindow? PanelForDiagnostics => _panel;
     internal bool SmokeMode { get; private set; }
@@ -148,7 +149,7 @@ public partial class App : Application
         var elapsed = _clock.Elapsed.TotalSeconds;
         var delta = elapsed - _lastTick; _lastTick = elapsed;
         var now = DateTimeOffset.UtcNow;
-        if (Notifications.Advance(now, _notificationWindow?.IsMouseOver == true || Controller.Dragging || Controller.PanelOpen && !PanelVisible || _mascot?.IsVisible == false)) Render();
+        if (Notifications.Advance(now, _notificationWindow?.IsMouseOver == true || Controller.Dragging || NotificationSettingsVisible || Controller.PanelOpen && !PanelVisible || _mascot?.IsVisible == false)) Render();
         if (!SmokeMode) AdvanceNotchHover(Desktop.Cursor, _clock.Elapsed);
         if (Controller.PointerHeld && Desktop.EscapeDown) _mascot?.CancelDrag();
         if (elapsed - _lastSecond >= 1)
@@ -198,7 +199,7 @@ public partial class App : Application
             _hint?.Update(dragDisplay, Controller.DockEligible);
         else _hint?.Hide();
         var notice = Notifications.Current ?? (_demoNotificationUntil > DateTimeOffset.UtcNow ? _demoNotification : null);
-        var showNotice = notice is not null && _mascot.IsVisible && !Controller.Dragging && !_sessionLocked && (!Controller.PanelOpen || PanelVisible);
+        var showNotice = notice is not null && _mascot.IsVisible && !Controller.Dragging && !_sessionLocked && !NotificationSettingsVisible && (!Controller.PanelOpen || PanelVisible);
         if (_mascot.IsVisible && Controller.Mode != MascotMode.Notch && cue.ShowBubble && !Controller.Dragging && !Controller.PanelOpen && !showNotice)
             _lyricBubble?.Update(cue, ActiveMedia?.Title ?? "", new(Controller.Position.X, Controller.Position.Y, w, h), d);
         else _lyricBubble?.Hide();
