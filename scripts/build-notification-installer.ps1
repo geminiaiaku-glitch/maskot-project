@@ -51,9 +51,14 @@ internal static class InstallerData {
  internal const string Thumbprint = "$($cert.Thumbprint)";
 }
 "@ | Set-Content -Encoding utf8 artifacts/InstallerData.cs
-    $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
-    & $compiler /nologo /target:winexe /utf8output /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /out:"$stage/Pasang-Momo.exe" packaging/notifications/Installer.cs artifacts/InstallerData.cs
-    if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
+    $dotnet = (Get-Command dotnet).Source
+    $sdkVersion = (& $dotnet --version).Trim()
+    $compiler = Join-Path (Split-Path $dotnet) "sdk/$sdkVersion/Roslyn/bincore/csc.dll"
+    $refs = Join-Path ${env:ProgramFiles(x86)} 'Reference Assemblies/Microsoft/Framework/.NETFramework/v4.8'
+    $referenceArgs = @('mscorlib','System','System.Core','System.Windows.Forms','System.Drawing') | ForEach-Object { "/reference:$refs/$_.dll" }
+    $compilerOutput = & $dotnet $compiler /nologo /noconfig /nostdlib+ /target:winexe /utf8output @referenceArgs /out:"$stage/Pasang-Momo.exe" packaging/notifications/Installer.cs artifacts/InstallerData.cs 2>&1
+    $compilerOutput | Write-Output
+    if ($LASTEXITCODE -ne 0) { throw ('Installer compilation failed: ' + ($compilerOutput -join "`n")) }
     Copy-Item docs/PASANG-NOTIFIKASI.txt "$stage/MULAI-DI-SINI.txt"
     @{ identity='MomoProject.MomoNotifications'; version='0.5.0.0'; publisher=$cert.Subject; certificateThumbprint=$cert.Thumbprint; certificateSha256=$certificateHash; msixSha256=$packageHash; applicationSha256=$applicationHash; privateKeyIncluded=$false } | ConvertTo-Json | Set-Content -Encoding utf8 "$stage/package-info.json"
     Compress-Archive -Path "$stage/*" -DestinationPath artifacts/Maskot-Notifikasi-Setup.zip -Force

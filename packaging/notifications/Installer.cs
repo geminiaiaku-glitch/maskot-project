@@ -1,4 +1,4 @@
-// Built with the Windows .NET Framework compiler. No runtime download or execution-policy changes.
+// Targets Windows' built-in .NET Framework 4.8. No runtime download or execution-policy changes.
 using System;
 using System.Diagnostics;
 using System.Drawing;

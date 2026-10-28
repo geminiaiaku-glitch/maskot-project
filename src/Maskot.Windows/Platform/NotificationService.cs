@@ -81,7 +81,7 @@ internal sealed class NotificationService : IDisposable
             if (access != NotificationAccess.Allowed) { AccessUnavailable(access); return; }
             IsEnabled = true; Status = EnabledMessage; Changed?.Invoke();
             if (!IsCurrent(revision) || !IsEnabled) return;
-            if (_pollAutomatically) _timer.Start();
+            if (_pollAutomatically && !_feed.IsSuspended) _timer.Start();
             await RefreshAsync();
         }
         catch (OperationCanceledException) when (operation.Cancellation.IsCancellationRequested) { }
@@ -96,7 +96,7 @@ internal sealed class NotificationService : IDisposable
     internal Task RefreshAsync()
     {
         _dispatcher.VerifyAccess();
-        if (_disposed || !IsEnabled) return Task.CompletedTask;
+        if (_disposed || !IsEnabled || _feed.IsSuspended) return Task.CompletedTask;
         if (_poll is { } active) return active.Task;
         var operation = new Operation(); _poll = operation;
         operation.Task = PollCoreAsync(operation, _revision);
@@ -174,6 +174,8 @@ internal sealed class NotificationService : IDisposable
         if (_disposed || !_feed.SuspendPresentation(suspended)) return;
         // Discard a read begun before the lock/quiet transition so it cannot establish a stale baseline.
         var poll = _poll; _poll = null; poll?.Cancellation.Cancel();
+        if (suspended) _timer.Stop();
+        else if (IsEnabled && _pollAutomatically) _timer.Start();
         Changed?.Invoke();
         if (IsEnabled) _ = RefreshAsync();
     }

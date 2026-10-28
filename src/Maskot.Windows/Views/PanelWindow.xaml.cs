@@ -19,6 +19,7 @@ public partial class PanelWindow : Window
     private bool _nativeDialog;
     private int _lastPage;
     private DateTimeOffset? _noticeUntil;
+    private (int Count, DesktopNotice? First, bool Hidden)? _notificationHistoryKey;
     private static readonly string[] PageNames = ["Musik", "Fokus", "Ruang", "Setelan"];
     private static readonly Brush[] PageAccents = [ColorBrush("#F083A0"), ColorBrush("#EFB68B"), ColorBrush("#83BDF2"), ColorBrush("#C7C7D2")];
     private static readonly Brush Muted = ColorBrush("#909097"), Dim = ColorBrush("#45454C"), Selected = ColorBrush("#29292F"), Dark = ColorBrush("#FE050506");
@@ -239,13 +240,16 @@ public partial class PanelWindow : Window
         EnableNotifications.IsEnabled = !_nativeDialog && !Host.Notifications.IsEnabled;
         PauseNotifications.IsEnabled = Host.Notifications.IsEnabled;
         HideNotificationContent.IsChecked = Host.State.Preferences.NotificationHideContent;
+        var key = (Host.Notifications.Recent.Count, Host.Notifications.Recent.FirstOrDefault(), Host.State.Preferences.NotificationHideContent);
+        if (_notificationHistoryKey == key && NotificationHistory.ItemsSource is not null) return;
+        _notificationHistoryKey = key;
         NotificationHistory.ItemsSource = Host.Notifications.Recent.Select(n => new
         {
             Source = n.SourceName,
-            Preview = Host.State.Preferences.NotificationHideContent ? "Notifikasi baru" : n.Title + (string.IsNullOrEmpty(n.Body) ? "" : " · " + n.Body)
+            Preview = Host.State.Preferences.NotificationHideContent ? "Notifikasi baru" : n.Title + (string.IsNullOrEmpty(n.Body) ? "" : " · " + n.Body.Replace('\r', ' ').Replace('\n', ' '))
         }).ToArray();
     }
-    internal void ClearNotificationView() => NotificationHistory.ItemsSource = null;
+    internal void ClearNotificationView() { NotificationHistory.ItemsSource = null; _notificationHistoryKey = null; }
     private async void EnableNotificationsClicked(object sender, RoutedEventArgs e)
     {
         _nativeDialog = true; EnableNotifications.IsEnabled = false;
