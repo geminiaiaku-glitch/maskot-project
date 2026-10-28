@@ -1,0 +1,57 @@
+name: Render and publish Momo trailer
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/make-trailer.py
+      - media/trailer/**
+      - .github/workflows/trailer.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  trailer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install video renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg fonts-open-sans
+          python -m pip install -r media/trailer/requirements.txt
+      - name: Render 1080p trailer
+        run: python scripts/make-trailer.py
+      - name: Verify video and audio
+        run: |
+          ffmpeg -v error -i artifacts/trailer/Momo-Trailer-1080p.mp4 -f null -
+          ffprobe -v error -show_entries format=duration:stream=codec_name,width,height,r_frame_rate -of json artifacts/trailer/Momo-Trailer-1080p.mp4 > artifacts/trailer/video-probe.json
+          python - <<'PY'
+          import json
+          d=json.load(open('artifacts/trailer/video-probe.json'))
+          v=next(s for s in d['streams'] if s['codec_name']=='h264')
+          assert (v['width'],v['height'],v['r_frame_rate'])==(1920,1080,'30/1')
+          assert abs(float(d['format']['duration'])-32)<.1
+          assert any(s['codec_name']=='aac' for s in d['streams'])
+          PY
+      - name: Upload trailer assets to application release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v0.4.0-preview.2 \
+            artifacts/trailer/Momo-Trailer-1080p.mp4 \
+            artifacts/trailer/Momo-Trailer-1080p.mp4.sha256 \
+            artifacts/trailer/Momo-Trailer-Poster.png \
+            artifacts/trailer/Momo-Trailer-ID.srt \
+            --clobber
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Momo-trailer-production
+          path: |
+            artifacts/trailer/*.mp4
+            artifacts/trailer/*.png
+            artifacts/trailer/*.srt
+            artifacts/trailer/*.json

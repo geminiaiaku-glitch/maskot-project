@@ -1,5 +1,7 @@
 # Maskot · Momo
 
+[Tonton / unduh trailer Momo · 32 detik, 1080p](https://github.com/geminiaiaku-glitch/maskot-project/releases/download/v0.4.0-preview.2/Momo-Trailer-1080p.mp4).
+
 Teman chibi kecil untuk Windows yang bisa berjalan di tepi layar, menetap di tempat
 pilihanmu, dan berubah menjadi notch. Aplikasi native C#/.NET 10 + WPF dengan
 penyimpanan lokal, tanpa akun atau backend.
