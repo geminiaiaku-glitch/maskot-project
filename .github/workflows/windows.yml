@@ -45,6 +45,26 @@ jobs:
           name: windows-smoke
           path: artifacts/windows-smoke/
           if-no-files-found: ignore
+      - name: Build and verify notifications installer
+        run: |
+          try { ./scripts/build-notification-installer.ps1; ./scripts/test-installed-windows.ps1 } catch {
+            $detail = ($_ | Out-String).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Notifications installer checks::$detail"
+            throw
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: installed-smoke
+          path: artifacts/installed-smoke/
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Maskot-notifications-setup
+          path: |
+            artifacts/Maskot-Notifikasi-Setup.zip
+            artifacts/Maskot-Notifikasi-Setup.zip.sha256
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: Maskot-win-x64
@@ -76,6 +96,14 @@ jobs:
         with:
           name: windows-smoke
           path: artifacts/win-x64/windows-smoke/
+      - uses: actions/download-artifact@v4
+        with:
+          name: installed-smoke
+          path: artifacts/win-x64/installed-smoke/
+      - uses: actions/download-artifact@v4
+        with:
+          name: Maskot-notifications-setup
+          path: artifacts/
       - name: Package portable application
         run: |
           cd artifacts/win-x64
@@ -89,6 +117,7 @@ jobs:
         run: |
           gh release create "$RELEASE_TAG" \
             artifacts/Maskot-win-x64.zip artifacts/Maskot-win-x64.zip.sha256 \
+            artifacts/Maskot-Notifikasi-Setup.zip artifacts/Maskot-Notifikasi-Setup.zip.sha256 \
             --verify-tag --prerelease \
             --title "Maskot / Momo — $RELEASE_TAG" \
             --notes-file docs/RELEASE-NOTES.md

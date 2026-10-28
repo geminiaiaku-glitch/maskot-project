@@ -63,6 +63,8 @@ public sealed class Preferences
     public bool HideInFullscreen { get; set; }
     public bool LyricsEnabled { get; set; }
     public bool StartAtLogin { get; set; }
+    public bool NotificationsEnabled { get; set; }
+    public bool NotificationHideContent { get; set; }
 }
 
 public sealed class AppState

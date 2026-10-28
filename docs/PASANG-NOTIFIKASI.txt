@@ -1,0 +1,34 @@
+MOMO 0.5 — NOTIFIKASI WINDOWS
+
+1. Klik kanan Momo lama → Keluar.
+2. Ekstrak seluruh Maskot-Notifikasi-Setup.zip.
+3. Buka Pasang-Momo.exe. Baca penerbit/fingerprint, centang persetujuan jika sesuai,
+   lalu pilih Pasang Momo. Windows meminta izin administrator untuk memasang
+   sertifikat penerbit pengembangan Momo di Trusted People komputer ini.
+4. Pilih Buka Momo. Klik kanan Momo → Notifikasi Windows → Aktifkan.
+5. Izinkan akses pada dialog Windows. Coba kirim notifikasi dari aplikasi lain.
+
+Ini paket percobaan dengan sertifikat pengembangan, belum sertifikat komersial.
+Sertifikat publik disertakan; private key tidak dibagikan. Installer memeriksa
+checksum executable, MSIX dan sertifikat sebelum pemasangan. Tidak mengubah
+Execution Policy, Developer Mode, Defender atau izin notifikasi secara otomatis.
+
+Program dipasang untuk pengguna ini di %LOCALAPPDATA%\Programs\Momo.
+Catatan/tugas tetap di %LOCALAPPDATA%\Maskot. Notifikasi hanya ada dalam RAM
+selama sesi berjalan: tidak ditulis ke disk atau dikirim ke internet.
+
+Momo membaca notifikasi toast yang dibagikan Windows melalui Pusat Notifikasi.
+Pop-up internal aplikasi, UAC, layar kunci dan dialog keamanan tidak dibaca.
+Notifikasi lama dijadikan baseline, bukan ditampilkan ulang. Windows bisa
+menolak akses; izinnya dapat diubah melalui Pengaturan Windows → Privasi →
+Notifikasi. Jeda atau cabut izin untuk menghentikan akses dan menghapus riwayat
+Momo. Menutup kartu Momo tidak menghapus notifikasi asli Windows.
+
+Versi portable dapat mencoba tampilan kartu, tetapi akses notifikasi aplikasi
+memerlukan identitas paket terpasang. Momo harus sedang berjalan.
+
+Untuk mencopot: keluar dari Momo, buka Pengaturan Windows → Aplikasi → Momo →
+Copot pemasangan. Paket identitas dihapus; folder program eksternal dapat dihapus
+setelahnya. Jangan hapus folder data Maskot jika ingin menyimpan catatan/tugas.
+Sertifikat penerbit preview dapat dihapus melalui certlm.msc → Trusted People
+→ Certificates, dengan mencocokkan fingerprint di package-info.json.

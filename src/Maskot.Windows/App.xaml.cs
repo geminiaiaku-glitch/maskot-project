@@ -19,6 +19,13 @@ public partial class App : Application
     internal IReadOnlyList<DisplayArea> Displays { get; private set; } = [];
     internal MediaService Media { get; } = new();
     internal KaraokeSession Karaoke { get; private set; } = null!;
+    internal NotificationService Notifications { get; private set; } = null!;
+    private FixtureNotificationSource? _fixtureNotifications;
+    private NotificationWindow? _notificationWindow;
+    private DesktopNotice? _demoNotification;
+    private DateTimeOffset _demoNotificationUntil;
+    private bool _sessionLocked;
+    internal NotificationWindow? NotificationForDiagnostics => _notificationWindow;
     private LyricsClient? _lyricsClient;
     private FixtureLyricsSource? _fixtureLyrics;
     private MediaView? _fixtureMedia;
@@ -71,15 +78,23 @@ public partial class App : Application
         _store = new(SmokeMode ? Path.Combine(Path.GetTempPath(), "maskot-smoke-" + Guid.NewGuid())
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Maskot"));
         State = _store.Load(); State.Normalize();
+        if (SmokeMode) { _fixtureNotifications = new(); Notifications = new(_fixtureNotifications, pollAutomatically: false); }
+        else Notifications = new();
+        Notifications.Changed += NotificationsChanged;
         if (SmokeMode) { _fixtureLyrics = new(); Karaoke = new(_fixtureLyrics); }
         else { _lyricsClient = new(); Karaoke = new(_lyricsClient); }
         Karaoke.Changed += KaraokeChanged;
         Displays = Desktop.Displays();
         ApplyPreferences(); Controller.Restore(State.Placement, Displays);
-        _mascot = new(); MainWindow = _mascot; _hint = new(); _lyricBubble = new();
+        _mascot = new(); MainWindow = _mascot; _hint = new(); _lyricBubble = new(); _notificationWindow = new();
         _mascot.Show(); CreateTray(); Render();
         Media.Changed += MediaChanged;
         if (!SmokeMode) _ = Media.InitializeAsync();
+        if (!SmokeMode)
+        {
+            Microsoft.Win32.SystemEvents.SessionSwitch += SessionChanged;
+            if (State.Preferences.NotificationsEnabled) _ = Notifications.ResumeAsync();
+        }
         _clock.Start();
         _tick = new(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(40) };
         _tick.Tick += Tick; _tick.Start();
@@ -133,19 +148,23 @@ public partial class App : Application
         var elapsed = _clock.Elapsed.TotalSeconds;
         var delta = elapsed - _lastTick; _lastTick = elapsed;
         var now = DateTimeOffset.UtcNow;
+        if (Notifications.Advance(now, _notificationWindow?.IsMouseOver == true || Controller.Dragging)) Render();
         if (!SmokeMode) AdvanceNotchHover(Desktop.Cursor, _clock.Elapsed);
         if (Controller.PointerHeld && Desktop.EscapeDown) _mascot?.CancelDrag();
         if (elapsed - _lastSecond >= 1)
         {
             _lastSecond = elapsed;
+            if (!SmokeMode) Notifications.SuspendPresentation(_sessionLocked || !Desktop.AcceptsNotifications);
             Displays = Desktop.Displays(); Controller.ReconcileDisplays(Displays);
             var display = CurrentDisplay();
             var hidden = State.Preferences.HideInFullscreen && now >= _forceVisibleUntil && Desktop.FullscreenOn(display) && !PanelVisible && !Controller.PointerHeld;
             if (hidden) _mascot?.Hide(); else if (_mascot?.IsVisible == false) _mascot.Show();
             if (hidden) _lyricBubble?.Hide();
+            if (hidden) _notificationWindow?.Hide();
             if (!hidden && !Controller.PanelOpen && _mascot is not null) Desktop.KeepAbove(_mascot);
             if (!hidden && !Controller.PanelOpen && _lyricBubble is not null) Desktop.KeepAbove(_lyricBubble);
             if (!hidden && PanelVisible && _panel is not null) Desktop.KeepAbove(_panel);
+            if (!hidden && _notificationWindow is not null) Desktop.KeepAbove(_notificationWindow);
             if (State.Timer.Advance(now)) { SaveNow(); Notify(State.Timer.Phase == FocusPhase.Break ? "Sesi fokus selesai. Saatnya beristirahat. Buka panel untuk memulai istirahat." : "Istirahat selesai. Mulai sesi fokus saat kamu siap."); }
             _panel?.Tick();
         }
@@ -178,10 +197,18 @@ public partial class App : Application
         if (Controller.Dragging && Controller.DockNearby && Controller.DragDisplay is { } dragDisplay)
             _hint?.Update(dragDisplay, Controller.DockEligible);
         else _hint?.Hide();
-        if (_mascot.IsVisible && Controller.Mode != MascotMode.Notch && cue.ShowBubble && !Controller.Dragging && !Controller.PanelOpen)
+        var notice = Notifications.Current ?? (_demoNotificationUntil > DateTimeOffset.UtcNow ? _demoNotification : null);
+        var showNotice = notice is not null && _mascot.IsVisible && !Controller.Dragging && !_sessionLocked;
+        if (_mascot.IsVisible && Controller.Mode != MascotMode.Notch && cue.ShowBubble && !Controller.Dragging && !Controller.PanelOpen && !showNotice)
             _lyricBubble?.Update(cue, ActiveMedia?.Title ?? "", new(Controller.Position.X, Controller.Position.Y, w, h), d);
         else _lyricBubble?.Hide();
         if (PanelVisible) PositionPanel();
+        if (showNotice)
+        {
+            var anchor = PanelVisible && Controller.Mode == MascotMode.Notch ? Desktop.WindowBounds(_panel!) : new RectD(Controller.Position.X, Controller.Position.Y, w, h);
+            _notificationWindow?.Update(notice!, State.Preferences.NotificationHideContent, anchor, d, Controller.Mode == MascotMode.Notch);
+        }
+        else _notificationWindow?.ClearContents();
     }
     private void PositionPanel()
     {
@@ -249,6 +276,47 @@ public partial class App : Application
         PositionPanel(); if (!wasVisible) _panel.AnimateOpen(); if (!preview) _panel.Activate(); _panel.Tick(); Render();
     }
     internal void OpenLyricsPanel() { OpenPanel(); _panel?.ShowLyrics(); }
+    internal void OpenNotificationsPanel() { OpenPanel(true); _panel?.ShowNotifications(); }
+    internal async Task EnableNotificationsAsync()
+    {
+        await Notifications.EnableAsync();
+        if (Exiting) return;
+        State.Preferences.NotificationsEnabled = Notifications.IsEnabled;
+        SaveSoon(); _panel?.RefreshNotifications(); Render();
+    }
+    internal void PauseNotifications()
+    {
+        Notifications.Disable(); _demoNotification = null;
+        State.Preferences.NotificationsEnabled = false;
+        SaveSoon(); _panel?.RefreshNotifications(); Render();
+    }
+    internal void DismissNotification() { Notifications.DismissCurrent(); _demoNotification = null; Render(); }
+    internal void TestNotification()
+    {
+        _demoNotification = new(0, "momo.demo", "Momo · contoh", "Momo siap membawa kabar", "Ini hanya contoh tampilan. Notifikasi aplikasi akan muncul setelah akses Windows diizinkan.", DateTimeOffset.UtcNow);
+        _demoNotificationUntil = DateTimeOffset.UtcNow.AddSeconds(8); ClosePanel(); Render();
+    }
+    internal async Task SetNotificationFixturesAsync(params DesktopNotice[] notices)
+    {
+        if (!SmokeMode || _fixtureNotifications is null) throw new InvalidOperationException("Notification fixtures require --self-test.");
+        _fixtureNotifications.Snapshot = notices; await Notifications.RefreshAsync();
+    }
+    private void NotificationsChanged()
+    {
+        if (Exiting || Dispatcher.HasShutdownStarted) return;
+        Dispatcher.BeginInvoke(() => { if (!Exiting) { _panel?.RefreshNotifications(); Render(); } });
+    }
+    private void SessionChanged(object sender, Microsoft.Win32.SessionSwitchEventArgs e)
+    {
+        if (Dispatcher.HasShutdownStarted) return;
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (Exiting) return;
+            if (e.Reason == Microsoft.Win32.SessionSwitchReason.SessionLock) _sessionLocked = true;
+            else if (e.Reason == Microsoft.Win32.SessionSwitchReason.SessionUnlock) _sessionLocked = false;
+            Notifications.SuspendPresentation(_sessionLocked || !Desktop.AcceptsNotifications); _demoNotification = null; Render();
+        });
+    }
     internal void EnableLyrics()
     {
         State.Preferences.LyricsEnabled = true; RefreshKaraoke(); SaveNow(); _panel?.RefreshLyrics(); Render();
@@ -257,6 +325,7 @@ public partial class App : Application
     {
         _peek.Dismiss(); _previewPanel = false; _panelMotion?.Reset();
         if (_panel?.IsVisible == true) _panel.Hide();
+        _panel?.ClearNotificationView();
         Controller.SetPanel(false); SaveSoon();
         Render();
     }
@@ -309,6 +378,7 @@ public partial class App : Application
         menu.Items.Add("Buka panel", null, (_, _) => OpenPanel());
         menu.Items.Add("Pengaturan", null, (_, _) => OpenPanel(true));
         menu.Items.Add("Lirik & karaoke", null, (_, _) => OpenLyricsPanel());
+        menu.Items.Add("Notifikasi Windows", null, (_, _) => OpenNotificationsPanel());
         menu.Items.Add("Jalan-jalan", null, (_, _) => Walk());
         menu.Items.Add("Jadi notch", null, (_, _) => Dock());
         menu.Items.Add(new Forms.ToolStripSeparator()); menu.Items.Add("Keluar", null, (_, _) => Quit());
@@ -328,11 +398,13 @@ public partial class App : Application
         if (Exiting) return;
         Exiting = true; _tick?.Stop(); _panelMotion?.Dispose(); Controller.CancelDrag();
         SaveNow(); Media.Changed -= MediaChanged; Media.Dispose();
+        Microsoft.Win32.SystemEvents.SessionSwitch -= SessionChanged;
+        if (Notifications is not null) { Notifications.Changed -= NotificationsChanged; Notifications.Dispose(); }
         if (Karaoke is not null) { Karaoke.Changed -= KaraokeChanged; Karaoke.Dispose(); }
         _lyricsClient?.Dispose();
         if (_tray is not null) { _tray.Visible = false; _tray.ContextMenuStrip?.Dispose(); _tray.Dispose(); }
         _icon?.Dispose();
-        _panel?.Close(); _hint?.Close(); _lyricBubble?.Close(); _mascot?.Close();
+        _panel?.Close(); _hint?.Close(); _lyricBubble?.Close(); _notificationWindow?.Close(); _mascot?.Close();
         _instance?.Dispose(); Shutdown(exitCode);
     }
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e) { SaveNow(); base.OnSessionEnding(e); }

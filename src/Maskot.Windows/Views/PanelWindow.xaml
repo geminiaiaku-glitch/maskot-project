@@ -177,11 +177,27 @@
        <CheckBox x:Name="Animations" Content="Animasi Momo: kaki, ekor, napas, kedip" Click="PreferenceChanged" Margin="0,15,0,5" />
        <CheckBox x:Name="Fullscreen" Content="Sembunyikan saat aplikasi fullscreen" Click="PreferenceChanged" /><TextBlock Text="Biarkan mati agar Momo tetap tampil di atas jendela fullscreen." Style="{StaticResource Caption}" Margin="0,0,0,8" />
        <CheckBox x:Name="Autostart" Content="Jalankan saat login Windows" Click="AutostartChanged" />
+       <Border x:Name="NotificationSection" Background="#121A20" CornerRadius="14" Padding="12" Margin="0,18,0,3">
+        <StackPanel>
+         <TextBlock Text="KABAR DARI WINDOWS" Foreground="#A9D6C9" FontSize="10" FontWeight="SemiBold" />
+         <TextBlock x:Name="NotificationStatus" Text="Notifikasi Windows belum diaktifkan." Style="{StaticResource Caption}" Margin="0,7,0,8" />
+         <TextBlock Text="Dengan izinmu, Momo menampilkan notifikasi aplikasi dari Pusat Notifikasi Windows. Isi notifikasi hanya diproses di perangkat ini." Style="{StaticResource Caption}" FontSize="10" />
+         <WrapPanel Margin="0,9,0,0"><Button x:Name="EnableNotifications" Content="Aktifkan" Click="EnableNotificationsClicked" FontSize="11" Padding="10,6" /><Button x:Name="PauseNotifications" Content="Jeda" Click="PauseNotificationsClicked" FontSize="11" Padding="10,6" /><Button Content="Coba tampilan" Click="TestNotificationClicked" FontSize="11" Padding="10,6" Margin="0" /></WrapPanel>
+         <Button Content="Atur izin di Windows" Background="Transparent" Foreground="#A9C8F1" HorizontalAlignment="Left" FontSize="10" Padding="0,5" Margin="0,5,0,0" Click="NotificationPermissionClicked" />
+         <CheckBox x:Name="HideNotificationContent" Content="Sembunyikan judul dan isi pesan" FontSize="11" Click="HideNotificationContentClicked" />
+         <TextBlock Text="Saat PC terkunci atau Windows sedang sibuk, kartu disembunyikan. Notifikasi asli tetap ada di Windows." Style="{StaticResource Caption}" FontSize="10" />
+         <TextBlock Text="RIWAYAT SESI · TIDAK DISIMPAN KE DISK" FontSize="8" Foreground="#7D93A5" Margin="0,13,0,6" />
+         <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto"><ItemsControl x:Name="NotificationHistory"><ItemsControl.ItemTemplate><DataTemplate>
+          <Border BorderBrush="#283440" BorderThickness="0,0,0,1" Padding="0,6"><StackPanel><TextBlock Text="{Binding Source}" Foreground="#A9C8F1" FontSize="9" /><TextBlock Text="{Binding Preview}" TextTrimming="CharacterEllipsis" FontSize="11" Margin="0,3,0,0" /></StackPanel></Border>
+         </DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+         <Button Content="Bersihkan riwayat Momo" Click="ClearNotificationHistoryClicked" Background="Transparent" Foreground="#8B9CAF" HorizontalAlignment="Left" FontSize="9" Padding="0,5" Margin="0,4,0,0" />
+        </StackPanel>
+       </Border>
        <CheckBox x:Name="OnlineLyrics" Content="Lirik online melalui LRCLIB" Click="LyricsChanged" Margin="0,16,0,5" />
        <TextBlock Text="Jika diaktifkan, judul lagu, artis, dan durasi dikirim ke lrclib.net lewat HTTPS. Tanpa akun atau API key. Tidak ada telemetry." Style="{StaticResource Caption}" />
        <Border Background="#151518" CornerRadius="12" Padding="13" Margin="0,20,0,15"><TextBlock Text="Seret Momo ke tengah atas monitor, lalu lepaskan untuk menjadi notch. Tarik notch ke bawah untuk mengembalikannya. Escape membatalkan drag." Style="{StaticResource Caption}" /></Border>
        <Button Content="Keluar sepenuhnya" HorizontalAlignment="Left" Click="QuitClicked" />
-       <TextBlock Text="Maskot 0.4.0 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
+       <TextBlock Text="Maskot 0.5 · Momo adalah aset vektor orisinal sementara." Style="{StaticResource Caption}" Margin="0,14,0,0" />
       </StackPanel>
      </ScrollViewer>
     </TabItem>

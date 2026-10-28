@@ -41,6 +41,7 @@ public partial class PanelWindow : Window
         Notes.Text = state.Notes; FocusMinutes.Text = state.Timer.FocusMinutes.ToString(); BreakMinutes.Text = state.Timer.BreakMinutes.ToString();
         SizeSlider.Value = prefs.Size; SpeedSlider.Value = prefs.WalkSpeed; Animations.IsChecked = prefs.ExtraAnimations;
         Fullscreen.IsChecked = prefs.HideInFullscreen; OnlineLyrics.IsChecked = prefs.LyricsEnabled;
+        HideNotificationContent.IsChecked = prefs.NotificationHideContent;
         Autostart.IsChecked = LoginStartup.IsEnabled();
         state.Preferences.StartAtLogin = Autostart.IsChecked == true;
         RefreshLists();
@@ -223,6 +224,46 @@ public partial class PanelWindow : Window
         TimerStatus.Text = timer.Running ? "Momo menjaga waktu untukmu." : "Tarik napas. Mulai saat kamu siap.";
         FocusMinutes.IsEnabled = BreakMinutes.IsEnabled = !timer.Running;
         RefreshLyrics();
+        if (Tabs.SelectedIndex == 3) RefreshNotifications();
+    }
+    internal void ShowNotifications()
+    {
+        OpenSettings(); RefreshNotifications();
+        Dispatcher.BeginInvoke(() => NotificationSection.BringIntoView(new Rect(0, 0, NotificationSection.ActualWidth, 180)), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+    internal void RefreshNotifications()
+    {
+        if (_initializing) return;
+        if (!IsVisible || Host.Exiting) { ClearNotificationView(); return; }
+        NotificationStatus.Text = Host.Notifications.Status;
+        EnableNotifications.IsEnabled = !_nativeDialog && !Host.Notifications.IsEnabled;
+        PauseNotifications.IsEnabled = Host.Notifications.IsEnabled;
+        HideNotificationContent.IsChecked = Host.State.Preferences.NotificationHideContent;
+        NotificationHistory.ItemsSource = Host.Notifications.Recent.Select(n => new
+        {
+            Source = n.SourceName,
+            Preview = Host.State.Preferences.NotificationHideContent ? "Notifikasi baru" : n.Title + (string.IsNullOrEmpty(n.Body) ? "" : " · " + n.Body)
+        }).ToArray();
+    }
+    internal void ClearNotificationView() => NotificationHistory.ItemsSource = null;
+    private async void EnableNotificationsClicked(object sender, RoutedEventArgs e)
+    {
+        _nativeDialog = true; EnableNotifications.IsEnabled = false;
+        try { await Host.EnableNotificationsAsync(); }
+        finally { _nativeDialog = false; if (!Host.Exiting) RefreshNotifications(); }
+    }
+    private void PauseNotificationsClicked(object sender, RoutedEventArgs e) => Host.PauseNotifications();
+    private void TestNotificationClicked(object sender, RoutedEventArgs e) => Host.TestNotification();
+    private void HideNotificationContentClicked(object sender, RoutedEventArgs e)
+    {
+        Host.State.Preferences.NotificationHideContent = HideNotificationContent.IsChecked == true;
+        Host.SaveSoon(); RefreshNotifications(); Host.Render();
+    }
+    private void ClearNotificationHistoryClicked(object sender, RoutedEventArgs e) { Host.Notifications.Clear(); RefreshNotifications(); }
+    private async void NotificationPermissionClicked(object sender, RoutedEventArgs e)
+    {
+        try { await global::Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-notifications")); }
+        catch { Notice("Buka Pengaturan Windows → Privasi dan keamanan → Notifikasi."); }
     }
     private static string Format(TimeSpan t) => t.TotalHours >= 1 ? $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}" : $"{(int)t.TotalMinutes:00}:{t.Seconds:00}";
     internal void RefreshLyrics()

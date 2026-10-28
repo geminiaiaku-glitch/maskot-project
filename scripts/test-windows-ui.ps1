@@ -4,9 +4,9 @@ $output = Join-Path $PWD ('artifacts/windows-smoke/run-' + [guid]::NewGuid().ToS
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $exe = Join-Path $PWD 'artifacts/win-x64/Maskot.exe'
 $process = Start-Process -FilePath $exe -ArgumentList "--self-test --self-test-output `"$output`"" -PassThru -RedirectStandardOutput (Join-Path $output 'stdout.txt') -RedirectStandardError (Join-Path $output 'stderr.txt')
-if (-not $process.WaitForExit(60000)) {
+if (-not $process.WaitForExit(90000)) {
     $process.Kill($true)
-    throw 'Windows UI checks did not finish within 60 seconds.'
+    throw 'Windows UI checks did not finish within 90 seconds.'
 }
 $reportPath = Join-Path $output 'result.json'
 if (-not (Test-Path $reportPath)) {

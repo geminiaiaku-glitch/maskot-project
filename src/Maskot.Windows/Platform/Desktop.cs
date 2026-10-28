@@ -34,11 +34,13 @@ internal static class Desktop
     [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
     [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr hwnd, uint command);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out int value, int size);
+    [DllImport("shell32.dll")] private static extern int SHQueryUserNotificationState(out int state);
     [DllImport("user32.dll")] internal static extern bool DestroyIcon(IntPtr icon);
 
     public static PointD Cursor { get { GetCursorPos(out var p); return new(p.X, p.Y); } }
     public static bool EscapeDown => GetAsyncKeyState(0x1B) < 0;
     internal static IntPtr ForegroundHandle => GetForegroundWindow();
+    internal static bool AcceptsNotifications => SHQueryUserNotificationState(out var state) == 0 && state is 5 or 7;
     public static bool LeftDown => GetAsyncKeyState(0x01) < 0;
     internal const int DragEscapeId = 0x57A0;
     public static void CaptureEscape(Window window) => RegisterHotKey(new WindowInteropHelper(window).Handle, DragEscapeId, 0x4000, 0x1B);

@@ -158,6 +158,8 @@ internal static class WindowsSmoke
             Check("pause_removes_microphone_with_lyrics_disabled", app.FixtureLyricsRequests == lookups && !mascot.Character.Microphone.IsVisible && app.BubbleForDiagnostics?.IsVisible == false);
 
             await NotchInteractionSmoke.RunAsync(app, output, Check);
+            await NotificationServiceSmoke.RunAsync(Check);
+            await NotificationPresentationSmoke.RunAsync(app, output, Check);
             await ProbeLyricsProviderAsync(output);
         }
         catch (Exception e)

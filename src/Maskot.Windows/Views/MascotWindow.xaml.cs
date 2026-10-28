@@ -87,6 +87,7 @@ public partial class MascotWindow : Window
         Item("Jadi notch", Host.Dock);
         Item("Pengaturan", () => Host.OpenPanel(true));
         Item("Lirik & karaoke", Host.OpenLyricsPanel);
+        Item("Notifikasi Windows", Host.OpenNotificationsPanel);
         menu.Items.Add(new Separator()); Item("Keluar", Host.Quit);
         menu.Closed += (_, _) => { if (!Host.PanelVisible) Host.Controller.SetPanel(false); };
         ContextMenu = menu; menu.IsOpen = true; e.Handled = true;
